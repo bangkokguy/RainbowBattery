@@ -1,0 +1,128 @@
+<resources>
+    <string name="app_name">Rainbow battery monitor</string>
+    <string name="preference_file_key">pKey</string>
+    <string name="app_title">Rainbow battery monitor</string>
+    <string name="filter_title_rainbowbattery">Rainbow battery monitor</string>
+
+    <string name="fire">fire</string>
+    <string name="cancel">cancel</string>
+    <string name="permission_needed">Permission needed</string>
+    <string name="dialog_fire_missiles">
+        \"Draw on top\" permission is not granted,
+        please grant it to \"Rainbow Battery Monitor\" in AppsOps
+        or permission settings of your device, than restart the
+        application.
+        </string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- General settings -->
+    <string name="pref_header_settings">Settings</string>
+    <string name="pref_header_general">General</string>
+    <!-- -->
+    <string name="start_on_boot">Start on boot</string>
+    <string name="start_on_boot_s">If on, the battery monitor will start on boot.</string>
+    <string name="led_on">Use LED</string>
+    <string name="led_on_s">If on, the LED will reflect with its color the charge status. Not all models support it.</string>
+
+    <!-- Battery notification settings -->
+    <string name="battery_sound">Sound settings</string>
+
+    <!--battery notification options -->
+    <string name="play_battery_full_sound">Play sound when battery full</string>
+    <string name="play_battery_full_sound_s">Play sound when battery full</string>
+    <string name="play_battery_empty_sound">Play sound when battery empty</string>
+    <string name="play_battery_empty_sound_s">Play sound when battery empty</string>
+    <string name="repeat_battery_full_sound">Repeat battery full sound</string>
+    <string name="repeat_battery_full_sound_s">Repeat battery full sound</string>
+    <string name="repeat_battery_empty_sound">Repeat battery empty sound</string>
+    <string name="repeat_battery_empty_sound_s">Repeat battery empty sound</string>
+
+    <!--battery full notification sound -->
+    <string name="battery_full_sound">Sound when full</string>
+    <string name="battery_full_sound_s">The picked sound will be played when battery full.</string>
+    <!--battery empty notification sound -->
+    <string name="battery_empty_sound">Sound when empty</string>
+    <string name="battery_empty_sound_s">The picked sound will be played when battery full.</string>
+
+    <!--Battery Bar Layout -->
+    <string name="bar_layout">Battery Bar Layout</string>
+    <string name="pref_bar_thickness">Battery bar thickness</string>
+    <string name="pref_bar_thickness_s">Battery Bar Thickness</string>
+    <string-array name="pref_bar_thickness_titles">
+        <item>Thin</item>
+        <item>Medium Thin</item>
+        <item>Medium</item>
+        <item>Medium Fat</item>
+        <item>Fat</item>
+    </string-array>
+    <string-array name="pref_bar_thickness_values">
+        <item>2</item>
+        <item>4</item>
+        <item>8</item>
+        <item>16</item>
+        <item>32</item>
+    </string-array>
+
+    <!--Message attributes-->
+    <!--Settings activity keyword text-->
+    <string name="info_in_the_message">Notification Info Details</string>
+    <string name="battery_percent">Battery percent</string>
+    <string name="battery_temperature">Battery temperature</string>
+    <string name="battery_health">Battery health</string>
+    <string name="battery_status">Battery status</string>
+    <string name="battery_power_source">Charging source</string>
+    <string name="battery_technology">Battery technology</string>
+    <string name="battery_voltage">Battery voltage</string>
+    <!--Settings activity summary text-->
+    <string name="battery_percent_s">The actual battery percent</string>
+    <string name="battery_temperature_s">The actual battery temperature in C°</string>
+    <string name="battery_health_s">Battery health flag (2=OK; more info in android dok)</string>
+    <string name="battery_status_s">Battery status flag (2=charging; more info in android dok)</string>
+    <string name="battery_power_source_s">Power source flag (2=AC; more info in android dok)</string>
+    <string name="battery_technology_s">Battery technology text (Li-Ion)</string>
+    <string name="battery_voltage_s">Battery voltage in mV</string>
+    <!--notification text-->
+    <string name="battery_percent_n">Battery Percent</string>
+    <string name="battery_temperature_n">Battery Temperature</string>
+    <string name="battery_health_n">Battery Health</string>
+    <string name="battery_status_n">Battery Status</string>
+    <string name="battery_power_source_n">Charging Source</string>
+    <string name="battery_technology_n">Battery Technology</string>
+    <string name="battery_voltage_n">Battery Voltage</string>
+    <string name="battery_voltage_n_uom">mV</string>
+
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <!-- notification keywords -->
+    <string-array name="power_sources">
+        <item>battery</item>
+        <item>AC charger</item>
+        <item>USB port</item>
+        <item>three</item>
+        <item>wireless</item>
+        <item>no info present</item>
+    </string-array>
+
+    <string-array name="battery_statuses">
+        <item>no info present</item>
+        <item>UNKNOWN</item>
+        <item>CHARGING</item>
+        <item>DISCHARGING</item>
+        <item>NOT CHARGING</item>
+        <item>FULL</item>
+    </string-array>
+
+    <string-array name="battery_health">
+        <item>no info present</item>
+        <item>UNKNOWN</item>
+        <item>GOOD</item>
+        <item>OVERHEAT</item>
+        <item>DEAD</item>
+        <item>OVER VOLTAGE</item>
+        <item>6</item>
+        <item>COLD</item>
+    </string-array>
+
+
+</resources>
