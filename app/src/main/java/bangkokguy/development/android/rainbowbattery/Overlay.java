@@ -1,6 +1,7 @@
 package bangkokguy.development.android.rainbowbattery;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -632,13 +633,25 @@ public class Overlay extends Service {
                 .apply();
     }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                if(DEBUG)Log.d(TAG, "my service is running");
+                return true;
+            }
+        }
+        if(DEBUG)Log.d(TAG, "my service is NOT running");
+        return false;
+    }
+
     private SharedPreferences.OnSharedPreferenceChangeListener sBindPreferenceSummaryToValueListener =
     new SharedPreferences.OnSharedPreferenceChangeListener() {
         final static String TAG = "OnSharedPrefChgListener";
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
             if(DEBUG)Log.d(TAG, "Preference:"+sharedPreferences.toString()+" Value:"+s);
-            showNotification();
+            if(isMyServiceRunning(Overlay.class))showNotification();
         }
     };
 }
