@@ -41,12 +41,12 @@ import static android.os.BatteryManager.BATTERY_STATUS_UNKNOWN;
 import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
 
 /*
- * TODO:Multipane setup
+ * DONE:Multipane setup
  * DONE:Battery bar process animation color should depend on bar color
  * DONE:Play sound if charged
  * DONE:Play sound if discharged
  * DONE:Make sound optional via settings
- * TODO:Change bar length on screen orientation
+ * DONE:Change bar length on screen orientation
  * TODO:Battery bar process marker animation should be refined on the edges of the bar
  * DONE:Change summary text
  * DONE:Change Notification Title
