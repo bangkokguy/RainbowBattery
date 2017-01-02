@@ -1,6 +1,5 @@
 package bangkokguy.development.android.rainbowbattery;
 
-
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +13,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -21,8 +21,11 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import java.util.List;
+
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -38,7 +41,9 @@ import java.util.List;
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
     final static String TAG="SettingsActivity";
-    final static boolean DEBUG = true;
+    final static boolean DEBUG = false;
+
+    public final static int OVERLAY_PERMISSION_REQ_CODE = 1234;
 
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
@@ -60,6 +65,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             } else if (preference instanceof RingtonePreference) {
                 // For ringtone preferences, look up the correct display value
                 // using RingtoneManager.
+                if(DEBUG)Log.d(TAG,"instanceof RingtonePreference");
                 if (TextUtils.isEmpty(stringValue)) {
                     // Empty values correspond to 'silent' (no ringtone).
                     preference.setSummary(R.string.pref_ringtone_silent);
@@ -122,7 +128,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_notification, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_layout, false);
 
 //        sendBroadcast(new Intent("bangkokguy.development.android.intent.action.SERVICE_PING"));
 
@@ -132,15 +141,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         if(DEBUG)Log.d(TAG, "OnCreate");
     }
 
-    public static int OVERLAY_PERMISSION_REQ_CODE = 1234;
+    private static final int REQUEST_READ_EXTERNAL_STORAGE = 1234;
 
     @Override
     protected void onStart() {
         super.onStart();
         if(DEBUG)Log.d(TAG, "OnStart");
 
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Log.d(TAG, Boolean.toString(Settings.canDrawOverlays(this)));
+            if(DEBUG)Log.d(TAG, Boolean.toString(Settings.canDrawOverlays(this)));
             if (!Settings.canDrawOverlays(this)) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
@@ -153,6 +163,33 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 .putExtra("showOverlay", true)
                 .putExtra("batteryEmptySoundPlayedCount", 0)
                 .putExtra("batteryFullSoundPlayedCount", 0));
+
+        PermissionUtil.checkPermission(this, READ_EXTERNAL_STORAGE, new PermissionUtil.PermissionAskListener() {
+            @Override
+            public void onPermissionAsk() {
+                Toast.makeText(SettingsActivity.this, "Permission Ask.", Toast.LENGTH_LONG).show();
+                ActivityCompat.requestPermissions(
+                        SettingsActivity.this,
+                        new String[]{READ_EXTERNAL_STORAGE},
+                        REQUEST_READ_EXTERNAL_STORAGE
+                );
+            }
+
+            @Override
+            public void onPermissionPreviouslyDenied() {
+                Toast.makeText(SettingsActivity.this, "Permission Previously Disabled.", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onPermissionDisabled() {
+                Toast.makeText(SettingsActivity.this, "Permission Disabled.", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onPermissionGranted() {
+                Toast.makeText(SettingsActivity.this, "Permission Granted.", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
@@ -160,7 +197,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                            int resultCode,
                            Intent data) {
         if(requestCode==OVERLAY_PERMISSION_REQ_CODE) {
-            Log.d(TAG, "result "+Integer.toString(resultCode));
+            if(DEBUG)Log.d(TAG, "result "+Integer.toString(resultCode));
             if(resultCode==0)
                 startService(new Intent(this, Overlay.class)
                         .putExtra("showOverlay", true)
@@ -226,16 +263,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
             setHasOptionsMenu(true);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines. No boolean values are bound.
-            //bindPreferenceSummaryToValue(findPreference("bar_thickness"));
-            //bindPreferenceSummaryToValue(findPreference("battery_full_sound"));
-            //bindPreferenceSummaryToValue(findPreference("battery_empty_sound"));
-            //bindPreferenceSummaryToValue(findPreference("repeat_battery_full_sound"));
-            //bindPreferenceSummaryToValue(findPreference("repeat_battery_empty_sound"));
         }
 
         @Override
@@ -294,6 +321,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("battery_empty_sound"));
             bindPreferenceSummaryToValue(findPreference("repeat_battery_full_sound"));
             bindPreferenceSummaryToValue(findPreference("repeat_battery_empty_sound"));
+            if(DEBUG)Log.d(TAG, "after bindPreferenceSummaryToValue");
         }
 
         @Override

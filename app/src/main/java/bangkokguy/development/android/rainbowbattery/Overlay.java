@@ -60,7 +60,7 @@ import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
 public class Overlay extends Service {
 
     final static String TAG="Overlay";
-    final static boolean DEBUG=true;
+    final static boolean DEBUG=false;
 
     final static int ONMS=255;
     final static int OFFMS=0;
@@ -74,7 +74,6 @@ public class Overlay extends Service {
     public DrawView barView;
     ReceiveBroadcast receiveBroadcast;
 
-    WindowManager.LayoutParams params;
     Display display;
     int screenWidth;
     int screenHeight;
@@ -270,7 +269,6 @@ public class Overlay extends Service {
         if(preferences.getBoolean("battery_power_source", false)) {
             style.addLine(getString(R.string.battery_power_source_n)+" " +
                     getResources().getStringArray(R.array.power_sources)[ePlugged]);
-        //Log.d(TAG,"ePlugged"+ePlugged);
             }
         if(preferences.getBoolean("battery_voltage", false)) {
             style.addLine(getString(R.string.battery_voltage_n)+" "+
@@ -503,7 +501,7 @@ public class Overlay extends Service {
         screenWidth = size.x;
         screenHeight = size.y;
 
-        /*WindowManager.LayoutParams*/ params = new
+        WindowManager.LayoutParams params = new
                 WindowManager.LayoutParams (
                         screenWidth, MAX_STROKE_WIDTH,
                         WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY, //TYPE_SYSTEM_ALERT
@@ -622,38 +620,12 @@ public class Overlay extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        Log.d(TAG, Integer.toString(newConfig.orientation) + ":::" +newConfig.toString());
+        if(DEBUG)Log.d(TAG, Integer.toString(newConfig.orientation) + ":::" +newConfig.toString());
 
         barView = initBarView(this);
         myRunnable.setBarView(barView);
 
         showNotification();
-
-        /*Point size = new Point();
-        display.getSize(size);
-        screenWidth = size.x;
-        screenHeight = size.y;*/
-        Log.d(TAG, "width: "+Integer.toString(screenWidth));
-
-        /*WindowManager.LayoutParams params = new
-                WindowManager.LayoutParams (
-                screenWidth, MAX_STROKE_WIDTH,
-                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY, //TYPE_SYSTEM_ALERT
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, //FLAG_WATCH_OUTSIDE_TOUCH,
-                PixelFormat.TRANSPARENT
-        );*/
-
-        /*params.width = screenWidth;
-
-        DrawView barViewNew = new DrawView(this, argbLedColor(getBatteryPercent()), screenWidth);
-        try {
-            wm.removeViewImmediate(barView);
-            wm.addView(barViewNew, params);
-            barView = barViewNew;
-        } catch (java.lang.SecurityException e)  {
-            //no overlay permission->forcefully end the service
-            stopSelf();
-        }*/
 
         sharedPref.edit()
             .putString("stop_code", "config changed")
