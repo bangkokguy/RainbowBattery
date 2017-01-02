@@ -13,6 +13,11 @@
             android:key="led_on"
             android:summary="@string/led_on_s"
             android:title="@string/led_on" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="extra_text"
+            android:summary="@string/extra_text_s"
+            android:title="@string/extra_text" />
 
     </PreferenceCategory>
 

@@ -4,8 +4,8 @@
     <string name="app_title">Rainbow battery monitor</string>
     <string name="filter_title_rainbowbattery">Rainbow battery monitor</string>
 
-    <string name="fire">fire</string>
-    <string name="cancel">cancel</string>
+    <string name="fire">Fire</string>
+    <string name="cancel">Cancel</string>
     <string name="permission_needed">Permission needed</string>
     <string name="dialog_fire_missiles">
         \"Draw on top\" permission is not granted,
@@ -24,6 +24,8 @@
     <string name="start_on_boot_s">If on, the battery monitor will start on boot.</string>
     <string name="led_on">Use LED</string>
     <string name="led_on_s">If on, the LED will reflect with its color the charge status. Not all models support it.</string>
+    <string name="extra_text">Display extra information</string>
+    <string name="extra_text_s">If on, the notification message will displays extra debugging information. Only for tester.</string>
 
     <!-- Battery notification settings -->
     <string name="battery_sound">Sound settings</string>
@@ -99,7 +101,7 @@
         <item>battery</item>
         <item>AC charger</item>
         <item>USB port</item>
-        <item>three</item>
+        <item>unknown (3)</item>
         <item>wireless</item>
         <item>no info present</item>
     </string-array>
@@ -107,21 +109,21 @@
     <string-array name="battery_statuses">
         <item>no info present</item>
         <item>UNKNOWN</item>
-        <item>CHARGING</item>
-        <item>DISCHARGING</item>
-        <item>NOT CHARGING</item>
-        <item>FULL</item>
+        <item>charging</item>
+        <item>discharging</item>
+        <item>not charging</item>
+        <item>full</item>
     </string-array>
 
     <string-array name="battery_health">
         <item>no info present</item>
         <item>UNKNOWN</item>
-        <item>GOOD</item>
-        <item>OVERHEAT</item>
-        <item>DEAD</item>
-        <item>OVER VOLTAGE</item>
-        <item>6</item>
-        <item>COLD</item>
+        <item>good</item>
+        <item>overheat</item>
+        <item>dead</item>
+        <item>over voltage</item>
+        <item>unknown (6)</item>
+        <item>cold</item>
     </string-array>
 
 

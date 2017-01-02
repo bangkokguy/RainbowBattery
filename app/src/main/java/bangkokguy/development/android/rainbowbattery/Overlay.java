@@ -50,7 +50,8 @@ import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
  * TODO:Battery bar process marker animation should be refined on the edges of the bar
  * DONE:Change summary text
  * DONE:Change Notification Title
- * TODO:Notification text should give text based info instead of status codes
+ * DONE:Notification text should give text based info instead of status codes
+ * DONE:Debug text should be switchable in settings
  */
 
 /**---------------------------------------------------------------------------
@@ -73,6 +74,8 @@ public class Overlay extends Service {
     public DrawView barView;
     ReceiveBroadcast receiveBroadcast;
 
+    WindowManager.LayoutParams params;
+    Display display;
     int screenWidth;
     int screenHeight;
 
@@ -94,6 +97,7 @@ public class Overlay extends Service {
     int     eTemperature = -1;  //the current battery temperature
     int 	eVoltage = -1;      //the current battery voltage level
     boolean	eLEDon = false;     //whether use led or not
+    boolean eExtraText = false; //extra debug text in the notification
 
     SharedPreferences preferences;
     SharedPreferences sharedPref;
@@ -281,23 +285,13 @@ public class Overlay extends Service {
             catch(NumberFormatException nfe) {i=-1;}
         if(i>-1)barView.setStrokeWidth(i);
 
-        /*style.setSummaryText(
-                "Battery "+
-                Integer.toString(getBatteryPercent())+
-                ":"+
-                extraMessage+
-                ":"+
-                stopCode +
-                ":"+
-                Boolean.toString(isBatteryCharging)+
-                " ("+
-                versionName+
-                ")");*/
-        String extra = isBatteryCharging ? "Battery is currently charging." : "Battery is discharging.";
-        style.setSummaryText(
-                extra +
+        eExtraText = preferences.getBoolean("extra_text", false);
+        String extra =
+                (eExtraText ? (":"+stopCode+":") : "") +
+                (isBatteryCharging ? "Battery is currently charging." : "Battery is discharging.") +
                 " Version: "+
-                versionName);
+                versionName;
+        style.setSummaryText(extra);
 
         NotificationCompat.Builder ncb =
                 new NotificationCompat.Builder(this)
@@ -332,8 +326,9 @@ public class Overlay extends Service {
                                         PendingIntent.FLAG_CANCEL_CURRENT));
 
         //The following part could be in "OnCreate()".
-        //In that case the values should be changed every time whenever preferences had been changed.
-        //But this is not a frequently called function, therefore easier implemented here.
+            //In that case the values should be changed whenever preferences had been changed.
+            //But this is not a frequently called function, therefore easier implemented here.
+
         playSoundIfBatteryFull = preferences.getBoolean("play_battery_full_sound", false);
         playSoundIfBatteryEmpty = preferences.getBoolean("play_battery_empty_sound", false);
         maxNumberOfBatteryFullSoundPlayed = Integer.parseInt(preferences.getString("repeat_battery_full_sound", "1"));
@@ -502,13 +497,13 @@ public class Overlay extends Service {
      */
     private DrawView initBarView(Context context) {
         wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
+        display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         screenWidth = size.x;
         screenHeight = size.y;
 
-        WindowManager.LayoutParams params = new
+        /*WindowManager.LayoutParams*/ params = new
                 WindowManager.LayoutParams (
                         screenWidth, MAX_STROKE_WIDTH,
                         WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY, //TYPE_SYSTEM_ALERT
@@ -518,11 +513,12 @@ public class Overlay extends Service {
 
         params.gravity = Gravity.TOP; //CENTER
 
+        if(barView!=null)wm.removeViewImmediate(barView);
         DrawView barView = new DrawView(this, argbLedColor(getBatteryPercent()), screenWidth);
         try {
             wm.addView(barView, params);
         } catch (java.lang.SecurityException e)  {
-            //no overlay permission->forcefully end service
+            //no overlay permission->forcefully end the service
             stopSelf();
         }
 
@@ -626,11 +622,44 @@ public class Overlay extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        Log.d(TAG, Integer.toString(newConfig.orientation) + ":::" +newConfig.toString());
+
+        barView = initBarView(this);
+        myRunnable.setBarView(barView);
+
+        showNotification();
+
+        /*Point size = new Point();
+        display.getSize(size);
+        screenWidth = size.x;
+        screenHeight = size.y;*/
+        Log.d(TAG, "width: "+Integer.toString(screenWidth));
+
+        /*WindowManager.LayoutParams params = new
+                WindowManager.LayoutParams (
+                screenWidth, MAX_STROKE_WIDTH,
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY, //TYPE_SYSTEM_ALERT
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, //FLAG_WATCH_OUTSIDE_TOUCH,
+                PixelFormat.TRANSPARENT
+        );*/
+
+        /*params.width = screenWidth;
+
+        DrawView barViewNew = new DrawView(this, argbLedColor(getBatteryPercent()), screenWidth);
+        try {
+            wm.removeViewImmediate(barView);
+            wm.addView(barViewNew, params);
+            barView = barViewNew;
+        } catch (java.lang.SecurityException e)  {
+            //no overlay permission->forcefully end the service
+            stopSelf();
+        }*/
+
         sharedPref.edit()
-                .putString("stop_code", "config changed")
-                .putInt("savedInstanceEmptySoundPlayedCount", batteryEmptySoundPlayedCount)
-                .putInt("savedInstanceFullSoundPlayedCount", batteryFullSoundPlayedCount)
-                .apply();
+            .putString("stop_code", "config changed")
+            .putInt("savedInstanceEmptySoundPlayedCount", batteryEmptySoundPlayedCount)
+            .putInt("savedInstanceFullSoundPlayedCount", batteryFullSoundPlayedCount)
+            .apply();
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {

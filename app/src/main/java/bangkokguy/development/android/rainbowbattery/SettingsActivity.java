@@ -124,6 +124,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         setupActionBar();
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
 
+        sendBroadcast(new Intent("bangkokguy.development.android.intent.action.SERVICE_PING"));
+
         getFragmentManager().beginTransaction()
                 .replace(android.R.id.content, new GeneralPreferenceFragment())
                 .commit();
@@ -210,6 +212,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         super.onDestroy();
         android.os.Process.killProcess(android.os.Process.myPid());
     }
+
+//    @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig);
+//    }
 
     /**
      * This fragment shows general preferences only. It is used when the
