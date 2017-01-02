@@ -14,6 +14,6 @@ public class CheckIfServiceRunning extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "onReceive");
+        if(DEBUG)Log.d(TAG, "onReceive");
     }
 }

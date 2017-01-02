@@ -4,14 +4,16 @@
     <string name="app_title">Rainbow battery monitor</string>
     <string name="filter_title_rainbowbattery">Rainbow battery monitor</string>
 
-    <string name="fire">Fire</string>
-    <string name="cancel">Cancel</string>
+    <string name="fire">Retry</string>
+    <string name="cancel">I got it</string>
     <string name="permission_needed">Permission needed</string>
     <string name="dialog_fire_missiles">
-        \"Draw on top\" permission is not granted,
-        please grant it to \"Rainbow Battery Monitor\" in AppsOps
-        or permission settings of your device, than restart the
-        application.
+        Permission to access media and files is not granted.
+        In order to use your own notification sounds, Rainbow
+        Battery Monitor needs this particular permission.
+        \nIf you do not want to enable this permission, the app will
+        function properly, except, that you won\'t be able to use your
+        own notification sounds.
         </string>
 
     <!-- Strings related to Settings -->

@@ -1,7 +1,9 @@
 package bangkokguy.development.android.rainbowbattery;
 
 import android.annotation.TargetApi;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.media.Ringtone;
@@ -14,10 +16,13 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
@@ -148,7 +153,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         super.onStart();
         if(DEBUG)Log.d(TAG, "OnStart");
 
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if(DEBUG)Log.d(TAG, Boolean.toString(Settings.canDrawOverlays(this)));
             if (!Settings.canDrawOverlays(this)) {
@@ -177,7 +181,27 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             @Override
             public void onPermissionPreviouslyDenied() {
-                Toast.makeText(SettingsActivity.this, "Permission Previously Disabled.", Toast.LENGTH_LONG).show();
+                if(DEBUG)Toast.makeText(SettingsActivity.this, "Permission Previously Disabled.", Toast.LENGTH_LONG).show();
+                new AlertDialog.Builder(SettingsActivity.this)
+                        .setTitle(getString(R.string.permission_needed))
+                        .setMessage(getString(R.string.dialog_fire_missiles))
+                        .setPositiveButton(R.string.fire, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // request permission again
+                                ActivityCompat.requestPermissions(
+                                        SettingsActivity.this,
+                                        new String[]{READ_EXTERNAL_STORAGE},
+                                        REQUEST_READ_EXTERNAL_STORAGE
+                                );
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // do nothing
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_info)
+                        .show();
             }
 
             @Override
@@ -187,7 +211,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             @Override
             public void onPermissionGranted() {
-                Toast.makeText(SettingsActivity.this, "Permission Granted.", Toast.LENGTH_LONG).show();
+                if(DEBUG)Toast.makeText(SettingsActivity.this, "Permission Granted.", Toast.LENGTH_LONG).show();
             }
         });
     }
