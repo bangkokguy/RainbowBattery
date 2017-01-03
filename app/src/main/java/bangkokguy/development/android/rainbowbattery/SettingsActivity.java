@@ -1,7 +1,6 @@
 package bangkokguy.development.android.rainbowbattery;
 
 import android.annotation.TargetApi;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,8 +15,6 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -137,6 +134,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_notification, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_layout, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_sound, false);
 
 //        sendBroadcast(new Intent("bangkokguy.development.android.intent.action.SERVICE_PING"));
 
@@ -267,6 +265,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralPreferenceFragment.class.getName().equals(fragmentName)
                 || LayoutPreferenceFragment.class.getName().equals(fragmentName)
+                || SoundPreferenceFragment.class.getName().equals(fragmentName)
                 || NotificationPreferenceFragment.class.getName().equals(fragmentName);
     }
 
@@ -329,6 +328,30 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * activity is showing a two-pane settings UI.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class SoundPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_sound);
+            setHasOptionsMenu(true);
+
+            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
+            // to their values. When their values change, their summaries are
+            // updated to reflect the new value, per the Android Design
+            // guidelines. No boolean values are bound.
+            bindPreferenceSummaryToValue(findPreference("battery_full_sound"));
+            bindPreferenceSummaryToValue(findPreference("battery_empty_sound"));
+            bindPreferenceSummaryToValue(findPreference("repeat_battery_full_sound"));
+            bindPreferenceSummaryToValue(findPreference("repeat_battery_empty_sound"));
+            if (DEBUG) Log.d(TAG, "after bindPreferenceSummaryToValue");
+        }
+    }
+
+    /**
+     * This fragment shows general preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class LayoutPreferenceFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -341,10 +364,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines. No boolean values are bound.
             bindPreferenceSummaryToValue(findPreference("bar_thickness"));
-            bindPreferenceSummaryToValue(findPreference("battery_full_sound"));
-            bindPreferenceSummaryToValue(findPreference("battery_empty_sound"));
-            bindPreferenceSummaryToValue(findPreference("repeat_battery_full_sound"));
-            bindPreferenceSummaryToValue(findPreference("repeat_battery_empty_sound"));
             if(DEBUG)Log.d(TAG, "after bindPreferenceSummaryToValue");
         }
 

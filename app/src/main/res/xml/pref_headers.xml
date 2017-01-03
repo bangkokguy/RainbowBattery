@@ -8,13 +8,18 @@
         android:title="@string/pref_header_general"/>
 
     <header
+        android:fragment="bangkokguy.development.android.rainbowbattery.SettingsActivity$LayoutPreferenceFragment"
+        android:icon="@drawable/ic_line_weight_black_24dp"
+        android:title="@string/pref_header_layout"/>
+
+    <header
         android:fragment="bangkokguy.development.android.rainbowbattery.SettingsActivity$NotificationPreferenceFragment"
-        android:icon="@drawable/ic_notifications_black_24dp"
+        android:icon="@drawable/ic_message_black_24dp"
         android:title="@string/pref_header_notification"/>
 
     <header
-        android:fragment="bangkokguy.development.android.rainbowbattery.SettingsActivity$LayoutPreferenceFragment"
-        android:icon="@drawable/ic_sync_black_24dp"
-        android:title="@string/pref_header_layout"/>
+        android:fragment="bangkokguy.development.android.rainbowbattery.SettingsActivity$SoundPreferenceFragment"
+        android:icon="@drawable/ic_notifications_black_24dp"
+        android:title="@string/pref_header_sound"/>
 
 </preference-headers>

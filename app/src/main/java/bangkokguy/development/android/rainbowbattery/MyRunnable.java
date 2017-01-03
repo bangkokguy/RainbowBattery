@@ -18,7 +18,7 @@ class MyRunnable implements Runnable {
     interface OnFinishListener { void onFinish(); }
 
     boolean isCanceled() { return isCanceled; }
-    OnFinishListener getOnFinishListener() { return mOnFinishListener; }
+    //OnFinishListener getOnFinishListener() { return mOnFinishListener; }
     void setOnFinishListener(OnFinishListener onFinishListener) { mOnFinishListener = onFinishListener; }
     void cancel() { isCanceled = true; }
     void start() { isCanceled = false; }

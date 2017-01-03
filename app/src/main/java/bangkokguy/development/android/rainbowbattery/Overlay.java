@@ -47,7 +47,7 @@ import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
  * DONE:Play sound if discharged
  * DONE:Make sound optional via settings
  * DONE:Change bar length on screen orientation
- * TODO:Battery bar process marker animation should be refined on the edges of the bar
+ * DONE:Battery bar process marker animation should be refined on the edges of the bar
  * DONE:Change summary text
  * DONE:Change Notification Title
  * DONE:Notification text should give text based info instead of status codes
@@ -424,12 +424,31 @@ public class Overlay extends Service {
         @Override
         public void onDraw(Canvas canvas) {
             canvas.drawLine(0, 0, barLength, 0, paint);
+            if (isBatteryCharging) {
+                from = from + STEP;
+                to = from + LEN;
+                if(from>barLength){
+                    from = (STEP * -1) + (barLength % STEP) + STEP;
+                    to = from + LEN;
+                }  {
+                    if(to>barLength){
+                        canvas.drawLine(0, 0, to-barLength, 0, p);
+                        to=barLength;
+                    }
+                    canvas.drawLine(from, 0, to, 0, p);
+                }
+            }
+        }
+
+        /*@Override
+        public void onDraw(Canvas canvas) {
+            canvas.drawLine(0, 0, barLength, 0, paint);
             if(isBatteryCharging) {
                 from = from + STEP;
                 to = from + LEN;
-                /* if from>barlength then from = STEP* -1 (???);
-                   if to > barlength then to = barlength--> in this case process marker should be drawn at the beginning of the bar too
-                  */
+                // if from>barlength then from = STEP* -1 (???);
+                //   if to > barlength then to = barlength--> in this case process marker should be drawn at the beginning of the bar too
+                //
                 if(to>barLength){
                     from = STEP * -1;
                 } else {
@@ -437,7 +456,7 @@ public class Overlay extends Service {
                     //Log.d(TAG, "from, to:"+Integer.toString(from)+", "+Integer.toString(to));
                 }
             }
-        }
+        }*/
     }
 
     /**
