@@ -430,33 +430,16 @@ public class Overlay extends Service {
                 if(from>barLength){
                     from = (STEP * -1) + (barLength % STEP) + STEP;
                     to = from + LEN;
-                }  {
-                    if(to>barLength){
-                        canvas.drawLine(0, 0, to-barLength, 0, p);
-                        to=barLength;
-                    }
-                    canvas.drawLine(from, 0, to, 0, p);
                 }
+
+                if(to>barLength){
+                    canvas.drawLine(0, 0, to-barLength, 0, p);
+                    to=barLength;
+                }
+
+                canvas.drawLine(from, 0, to, 0, p);
             }
         }
-
-        /*@Override
-        public void onDraw(Canvas canvas) {
-            canvas.drawLine(0, 0, barLength, 0, paint);
-            if(isBatteryCharging) {
-                from = from + STEP;
-                to = from + LEN;
-                // if from>barlength then from = STEP* -1 (???);
-                //   if to > barlength then to = barlength--> in this case process marker should be drawn at the beginning of the bar too
-                //
-                if(to>barLength){
-                    from = STEP * -1;
-                } else {
-                    canvas.drawLine(from, 0, to, 0, p);
-                    //Log.d(TAG, "from, to:"+Integer.toString(from)+", "+Integer.toString(to));
-                }
-            }
-        }*/
     }
 
     /**

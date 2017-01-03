@@ -15,6 +15,7 @@
             android:title="@string/led_on" />
         <SwitchPreference
             android:defaultValue="false"
+            android:enabled="false"
             android:key="extra_text"
             android:summary="@string/extra_text_s"
             android:title="@string/extra_text" />
