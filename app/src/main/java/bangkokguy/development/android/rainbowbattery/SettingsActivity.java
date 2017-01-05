@@ -1,6 +1,8 @@
 package bangkokguy.development.android.rainbowbattery;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -44,6 +46,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     final static String TAG="SettingsActivity";
     final static boolean DEBUG = false;
+
+    static int adb = 0;
 
     public final static int OVERLAY_PERMISSION_REQ_CODE = 1234;
 
@@ -126,6 +130,27 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
     }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                if(DEBUG)Log.d(TAG, "my service is running");
+                return true;
+            }
+        }
+        if(DEBUG)Log.d(TAG, "my service is NOT running");
+        return false;
+    }
+
+    void startMyService(Class<?> serviceClass) {
+        if(!isMyServiceRunning(serviceClass)){
+            startService(new Intent(this, Overlay.class)
+                    .putExtra("showOverlay", true)
+                    .putExtra("batteryEmptySoundPlayedCount", 0)
+                    .putExtra("batteryFullSoundPlayedCount", 0));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,29 +167,22 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 //                .replace(android.R.id.content, new GeneralPreferenceFragment())
 //                .commit();
         if(DEBUG)Log.d(TAG, "OnCreate");
-    }
 
-    private static final int REQUEST_READ_EXTERNAL_STORAGE = 1234;
+        /*
+        it should be checked here, whether the service is already started or not
+        it should be started only when if it's not running, otherwise the sound counters will be
+        set to zero which is wrong;
+        */
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if(DEBUG)Log.d(TAG, "OnStart");
-
+        //----> permission check cut out and pasted into onCreate
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if(DEBUG)Log.d(TAG, Boolean.toString(Settings.canDrawOverlays(this)));
             if (!Settings.canDrawOverlays(this)) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
                 startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE);
-            } else startService(new Intent(this, Overlay.class)
-                    .putExtra("showOverlay", true)
-                    .putExtra("batteryEmptySoundPlayedCount", 0)
-                    .putExtra("batteryFullSoundPlayedCount", 0));
-        } else startService(new Intent(this, Overlay.class)
-                .putExtra("showOverlay", true)
-                .putExtra("batteryEmptySoundPlayedCount", 0)
-                .putExtra("batteryFullSoundPlayedCount", 0));
+            } else startMyService(Overlay.class);
+        } else startMyService(Overlay.class);
 
         PermissionUtil.checkPermission(this, READ_EXTERNAL_STORAGE, new PermissionUtil.PermissionAskListener() {
             @Override
@@ -212,20 +230,34 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 if(DEBUG)Toast.makeText(SettingsActivity.this, "Permission Granted.", Toast.LENGTH_LONG).show();
             }
         });
+        //<---- permission check cut out and pasted into onCreate
+    }
+
+    private static final int REQUEST_READ_EXTERNAL_STORAGE = 1234;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(DEBUG)Log.d(TAG, "OnStart");
+
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN)
+            adb = Settings.Secure.getInt(this.getContentResolver(),
+                    Settings.Secure.DEVELOPMENT_SETTINGS_ENABLED , 0);
+        else
+            adb = Settings.Secure.getInt(this.getContentResolver(),
+                    Settings.Global.DEVELOPMENT_SETTINGS_ENABLED , 0);
+
+        //----> permission check cut out and pasted into onCreate
+
+        //<---- permission check cut out and pasted into onCreate
     }
 
     @Override
-    public void onActivityResult (int requestCode,
-                           int resultCode,
-                           Intent data) {
+    public void onActivityResult (int requestCode, int resultCode, Intent data) {
         if(requestCode==OVERLAY_PERMISSION_REQ_CODE) {
             if(DEBUG)Log.d(TAG, "result "+Integer.toString(resultCode));
             if(resultCode==0)
-                startService(new Intent(this, Overlay.class)
-                        .putExtra("showOverlay", true)
-                        .putExtra("batteryEmptySoundPlayedCount", 0)
-                        .putExtra("batteryFullSoundPlayedCount", 0));
-
+                startMyService(Overlay.class);
         }
     }
 
@@ -279,6 +311,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
+
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class GeneralPreferenceFragment extends PreferenceFragment {
         @Override
@@ -286,6 +319,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
             setHasOptionsMenu(true);
+
+            if(adb==1)
+                findPreference("extra_text").setEnabled(true);
+
         }
 
         @Override

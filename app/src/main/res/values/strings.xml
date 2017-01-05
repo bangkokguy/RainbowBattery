@@ -31,7 +31,10 @@
     <string name="led_on">Use LED</string>
     <string name="led_on_s">If on, the LED will reflect with its color the charge status. Not all models support it.</string>
     <string name="extra_text">Display extra information</string>
-    <string name="extra_text_s">If on, the notification message will displays extra debugging information. Only for tester.</string>
+    <string name="extra_text_s">
+        If on, the notification message will display
+        extra debugging information. Only for developer.
+        </string>
 
     <!-- Battery notification settings -->
     <string name="battery_sound">Sound settings</string>

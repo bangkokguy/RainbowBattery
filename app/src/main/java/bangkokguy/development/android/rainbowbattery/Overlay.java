@@ -33,6 +33,8 @@ import android.view.View;
 import android.view.WindowManager;
 
 import static android.content.Intent.ACTION_BATTERY_CHANGED;
+import static android.content.Intent.ACTION_POWER_CONNECTED;
+import static android.content.Intent.ACTION_POWER_DISCONNECTED;
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_SCREEN_ON;
 import static android.os.BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER;
@@ -52,6 +54,7 @@ import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
  * DONE:Change Notification Title
  * DONE:Notification text should give text based info instead of status codes
  * DONE:Debug text should be switchable in settings
+ * DONE:Full/Empty sound notification should launched after plug/unplug
  */
 
 /**---------------------------------------------------------------------------
@@ -160,6 +163,15 @@ public class Overlay extends Service {
         this.registerReceiver(
                 receiveBroadcast,
                 new IntentFilter(ACTION_SCREEN_ON));
+
+        this.registerReceiver(
+                receiveBroadcast,
+                new IntentFilter(ACTION_POWER_DISCONNECTED));
+
+        this.registerReceiver(
+                receiveBroadcast,
+                new IntentFilter(ACTION_POWER_CONNECTED));
+
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.registerOnSharedPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
@@ -484,6 +496,12 @@ public class Overlay extends Service {
                     isFastCharging=(ePlugged==BATTERY_STATUS_UNKNOWN);
                 //at last show the notification with the actual data
                     showNotification();
+                    break;
+                case ACTION_POWER_CONNECTED:
+                    batteryFullSoundPlayedCount = 0; //To force notification sound after charger plugged
+                    break;
+                case ACTION_POWER_DISCONNECTED:
+                    batteryEmptySoundPlayedCount = 0; //To force notification sound after charger unplugged
                     break;
                 default: if(DEBUG)Log.d(TAG,"case default"); break;
             } // @formatter:on
