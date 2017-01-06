@@ -54,7 +54,12 @@ import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
  * DONE:Change Notification Title
  * DONE:Notification text should give text based info instead of status codes
  * DONE:Debug text should be switchable in settings
+ * DONE:Debug text is only selectable if development mode enabled
  * DONE:Full/Empty sound notification should launched after plug/unplug
+ * DONE:Battery bar process marker length adjusted when bar length (battery percent) too small
+ * DONE:Density independent font size in settings activity
+ * TODO:Make Full/Empty percent adjustable in settings
+ * TODO:Make LED notification for low battery switchable in settings
  */
 
 /**---------------------------------------------------------------------------
@@ -431,24 +436,33 @@ public class Overlay extends Service {
         static final int LEN = 64;
         static final int STEP = 32;
         int from = STEP * -1;
-        int to;
+        int to, len, step;
 
         @Override
         public void onDraw(Canvas canvas) {
             canvas.drawLine(0, 0, barLength, 0, paint);
+            Log.d(TAG, "barLength:"+Integer.toString(barLength));
             if (isBatteryCharging) {
-                from = from + STEP;
-                to = from + LEN;
+                len = LEN;
+                step = STEP;
+                if(LEN >= barLength / 2) {
+                    len = barLength / 2;
+                    step = len / 2;
+                }
+                if(len == 0) {
+                    len = 1;
+                    step = 1;
+                }
+                from = from + step/*STEP*/;
+                to = from + len/*LEN*/;
                 if(from>barLength){
                     from = (STEP * -1) + (barLength % STEP) + STEP;
-                    to = from + LEN;
+                    to = from + len/*LEN*/;
                 }
-
                 if(to>barLength){
                     canvas.drawLine(0, 0, to-barLength, 0, p);
                     to=barLength;
                 }
-
                 canvas.drawLine(from, 0, to, 0, p);
             }
         }
@@ -499,9 +513,11 @@ public class Overlay extends Service {
                     break;
                 case ACTION_POWER_CONNECTED:
                     batteryFullSoundPlayedCount = 0; //To force notification sound after charger plugged
+                    showNotification();
                     break;
                 case ACTION_POWER_DISCONNECTED:
                     batteryEmptySoundPlayedCount = 0; //To force notification sound after charger unplugged
+                    showNotification();
                     break;
                 default: if(DEBUG)Log.d(TAG,"case default"); break;
             } // @formatter:on
