@@ -30,7 +30,7 @@
     <string name="start_on_boot_s">If on, the battery monitor will start on boot.</string>
     <string name="led_on">Use LED</string>
     <string name="led_on_s">If on, the LED will reflect with its color the charge status. Not all models support it.</string>
-    <string name="extra_text">Display extra information</string>
+    <string name="extra_text">Debug</string>
     <string name="extra_text_s">
         If on, the notification message will display
         extra debugging information. Only for developer.
@@ -40,21 +40,25 @@
     <string name="battery_sound">Sound settings</string>
 
     <!--battery notification options -->
-    <string name="play_battery_full_sound">Play sound when battery full</string>
-    <string name="play_battery_full_sound_s">Play sound when battery full</string>
-    <string name="play_battery_empty_sound">Play sound when battery empty</string>
-    <string name="play_battery_empty_sound_s">Play sound when battery empty</string>
+    <string name="play_battery_full_sound">Sound when full</string>
+    <string name="play_battery_full_sound_s">
+        If on, notification sound will be played once
+        battery reaches full charge state (96 %).</string>
+    <string name="play_battery_empty_sound">Sound when empty</string>
+    <string name="play_battery_empty_sound_s">
+        If on, notification sound will be played once
+        battery reaches low charge state (15 %).</string>
     <string name="repeat_battery_full_sound">Repeat battery full sound</string>
     <string name="repeat_battery_full_sound_s">Repeat battery full sound</string>
     <string name="repeat_battery_empty_sound">Repeat battery empty sound</string>
     <string name="repeat_battery_empty_sound_s">Repeat battery empty sound</string>
 
     <!--battery full notification sound -->
-    <string name="battery_full_sound">Sound when full</string>
+    <string name="battery_full_sound">Notification sound</string>
     <string name="battery_full_sound_s">The picked sound will be played when battery full.</string>
     <!--battery empty notification sound -->
-    <string name="battery_empty_sound">Sound when empty</string>
-    <string name="battery_empty_sound_s">The picked sound will be played when battery full.</string>
+    <string name="battery_empty_sound">Notification sound</string>
+    <string name="battery_empty_sound_s">The picked sound will be played when battery empty.</string>
 
     <!--Battery Bar Layout -->
     <string name="bar_layout">Battery Bar Layout</string>

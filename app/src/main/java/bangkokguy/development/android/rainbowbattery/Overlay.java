@@ -44,21 +44,23 @@ import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
 
 /*
  * DONE:Multipane setup
- * DONE:Battery bar process animation color should depend on bar color
- * DONE:Play sound if charged
- * DONE:Play sound if discharged
- * DONE:Make sound optional via settings
- * DONE:Change bar length on screen orientation
- * DONE:Battery bar process marker animation should be refined on the edges of the bar
- * DONE:Change summary text
- * DONE:Change Notification Title
- * DONE:Notification text should give text based info instead of status codes
- * DONE:Debug text should be switchable in settings
- * DONE:Debug text is only selectable if development mode enabled
- * DONE:Full/Empty sound notification should launched after plug/unplug
- * DONE:Battery bar process marker length adjusted when bar length (battery percent) too small
+ * DONE:Battery bar process animation color depends on bar color
+ * DONE:Sound if charged
+ * DONE:Sound if discharged
+ * DONE:Sound optional via settings
+ * DONE:Bar length updated when screen orientation changes
+ * DONE:Refined Battery bar process marker animation
+ * DONE:New Notification summary text
+ * DONE:New Notification Title
+ * DONE:Notification text gives text based info instead of status codes
+ * DONE:Debug text switchable in settings
+ * DONE:Debug text only selectable if development mode enabled
+ * DONE:Launch Full/Empty sound notification after plug/unplug
+ * DONE:Adjusted battery bar process marker length (depending on battery percent)
  * DONE:Density independent font size in settings activity
- * TODO:Make Full/Empty percent adjustable in settings
+ * DONE:Redesigned Sound Settings
+ * DONE:Redesigned Settings Activity screen flow
+ * TODO:Make Full/Empty percent limit adjustable in settings
  * TODO:Make LED notification for low battery switchable in settings
  */
 
@@ -380,7 +382,7 @@ public class Overlay extends Service {
             else {
                 if(DEBUG)Log.d(TAG,"Battery NOT Charging and not low");
                 //turn on "black" LED (this is the only possibility to turn off led in LG G5
-                ncb.setLights(Color.argb(255,0,0,0), 255, 0);
+                //ncb.setLights(Color.argb(255,0,0,0), 255, 0);
                 ncb.setDefaults(DEFAULT_LIGHTS);
             }
 
@@ -441,7 +443,6 @@ public class Overlay extends Service {
         @Override
         public void onDraw(Canvas canvas) {
             canvas.drawLine(0, 0, barLength, 0, paint);
-            Log.d(TAG, "barLength:"+Integer.toString(barLength));
             if (isBatteryCharging) {
                 len = LEN;
                 step = STEP;

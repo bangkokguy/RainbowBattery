@@ -6,8 +6,8 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="play_battery_full_sound"
-            android:title="@string/play_battery_full_sound" />
-        <!--android:summary="@string/play_battery_full_sound_s"-->
+            android:title="@string/play_battery_full_sound"
+            android:summary="@string/play_battery_full_sound_s" />
         <RingtonePreference
             android:dependency="play_battery_full_sound"
             android:key="battery_full_sound"
@@ -24,8 +24,8 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="play_battery_empty_sound"
-            android:title="@string/play_battery_empty_sound" />
-            <!--android:summary="@string/play_battery_empty_sound_s"-->
+            android:title="@string/play_battery_empty_sound"
+            android:summary="@string/play_battery_empty_sound_s" />
         <RingtonePreference
             android:dependency="play_battery_empty_sound"
             android:key="battery_empty_sound"

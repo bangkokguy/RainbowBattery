@@ -46,6 +46,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     final static String TAG="SettingsActivity";
     final static boolean DEBUG = false;
+    static boolean firstRun = true;
 
     static int adb = 0;
 
@@ -156,25 +157,24 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         super.onCreate(savedInstanceState);
         setupActionBar();
 
+        if(DEBUG)Log.d(TAG, "OnCreate, First run "+Boolean.toString(firstRun));
+        if(!firstRun)return; else firstRun=false;
+
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_notification, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_layout, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_sound, false);
 
 //        sendBroadcast(new Intent("bangkokguy.development.android.intent.action.SERVICE_PING"));
-
 //        getFragmentManager().beginTransaction()
 //                .replace(android.R.id.content, new GeneralPreferenceFragment())
 //                .commit();
-        if(DEBUG)Log.d(TAG, "OnCreate");
-
         /*
-        it should be checked here, whether the service is already started or not
-        it should be started only when if it's not running, otherwise the sound counters will be
-        set to zero which is wrong;
-        */
+         * it should be checked here, whether the service is already started or not
+         * it should be started only when if it's not running, otherwise the sound counters will be
+         * set to zero which is wrong;
+         */
 
-        //----> permission check cut out and pasted into onCreate
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if(DEBUG)Log.d(TAG, Boolean.toString(Settings.canDrawOverlays(this)));
             if (!Settings.canDrawOverlays(this)) {
@@ -230,7 +230,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 if(DEBUG)Toast.makeText(SettingsActivity.this, "Permission Granted.", Toast.LENGTH_LONG).show();
             }
         });
-        //<---- permission check cut out and pasted into onCreate
     }
 
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1234;
@@ -238,19 +237,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if(DEBUG)Log.d(TAG, "OnStart");
+        if(DEBUG)Log.d(TAG, "OnStart, Version:"+Integer.toString(Build.VERSION.SDK_INT));
 
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN)
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN)
             adb = Settings.Secure.getInt(this.getContentResolver(),
                     Settings.Secure.DEVELOPMENT_SETTINGS_ENABLED , 0);
         else
             adb = Settings.Secure.getInt(this.getContentResolver(),
                     Settings.Global.DEVELOPMENT_SETTINGS_ENABLED , 0);
 
-        //----> permission check cut out and pasted into onCreate
-
-        //<---- permission check cut out and pasted into onCreate
-    }
+     }
 
     @Override
     public void onActivityResult (int requestCode, int resultCode, Intent data) {
@@ -307,6 +303,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         //android.os.Process.killProcess(android.os.Process.myPid());
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     /**
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
@@ -329,7 +335,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
             if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                getFragmentManager().popBackStack();
                 return true;
             }
             return super.onOptionsItemSelected(item);
@@ -353,7 +359,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
             if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                getFragmentManager().popBackStack();
                 return true;
             }
             return super.onOptionsItemSelected(item);
@@ -382,6 +388,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("repeat_battery_empty_sound"));
             if (DEBUG) Log.d(TAG, "after bindPreferenceSummaryToValue");
         }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                getFragmentManager().popBackStack();
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
@@ -408,7 +424,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
             if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                getFragmentManager().popBackStack();
                 return true;
             }
             return super.onOptionsItemSelected(item);
