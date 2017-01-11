@@ -379,12 +379,12 @@ public class Overlay extends Service {
                 if(DEBUG)Log.d(TAG,"Battery Charging or low");
                 ncb.setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS);
             }
-            else {
+            /*else {
                 if(DEBUG)Log.d(TAG,"Battery NOT Charging and not low");
                 //turn on "black" LED (this is the only possibility to turn off led in LG G5
                 //ncb.setLights(Color.argb(255,0,0,0), 255, 0);
                 ncb.setDefaults(DEFAULT_LIGHTS);
-            }
+            }*/
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             Notification noti = ncb.build();
