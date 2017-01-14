@@ -2,15 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="bangkokguy.development.android.rainbowbattery">
 
-    <permission android:description="@string/fire"
+    <!--permission android:description="@string/fire"
                 android:name="bangkokguy.development.android.intent.action.SERVICE_PING"
                 android:permissionGroup="bangkokguy"
-                android:protectionLevel="normal" />
+                android:protectionLevel="normal" /-->
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="bangkokguy.development.android.intent.action.SERVICE_PING"/>
+    <!--uses-permission android:name="bangkokguy.development.android.intent.action.SERVICE_PING"/-->
 
     <application
         android:allowBackup="true"
@@ -19,14 +19,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <!--AppTheme"-->
+
         <activity
             android:name=".SettingsActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
             <intent-filter android:label="@string/filter_title_rainbowbattery">
                 <action android:name="android.intent.action.VIEW"/>
 
@@ -61,7 +62,7 @@
             </intent-filter>
         </receiver>
 
-        <receiver
+        <!--receiver
             android:name=".CheckIfServiceRunning"
             android:enabled="true"
             android:exported="true"
@@ -70,7 +71,7 @@
             <intent-filter>
                 <action android:name="bangkokguy.development.android.intent.action.SERVICE_PING"/>
             </intent-filter>
-        </receiver>
+        </receiver-->
 
     </application>
 

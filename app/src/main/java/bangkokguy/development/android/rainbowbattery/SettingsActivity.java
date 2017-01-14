@@ -7,14 +7,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
@@ -30,6 +33,9 @@ import android.widget.Toast;
 import java.util.List;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.content.Intent.FLAG_GRANT_PREFIX_URI_PERMISSION;
+import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
+import static java.security.AccessController.getContext;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -45,12 +51,12 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
     final static String TAG="SettingsActivity";
-    final static boolean DEBUG = false;
-    static boolean firstRun = true;
+    final static boolean DEBUG = true;
 
+    static boolean firstRun = true;
     static int adb = 0;
 
-    public final static int OVERLAY_PERMISSION_REQ_CODE = 1234;
+    final static int OVERLAY_PERMISSION_REQ_CODE = 1234;
 
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
@@ -78,8 +84,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     preference.setSummary(R.string.pref_ringtone_silent);
 
                 } else {
+                    if(DEBUG)Log.e(TAG, stringValue);
+
                     Ringtone ringtone = RingtoneManager.getRingtone(
-                            preference.getContext(), Uri.parse(stringValue));
+                             preference.getContext(), Uri.parse(stringValue));
 
                     if (ringtone == null) {
                         // Clear the summary if there was a lookup error.
@@ -151,6 +159,78 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     .putExtra("batteryFullSoundPlayedCount", 0));
         }
     }
+//------------------------------------------
+    /**
+     * TODO: remove for the product version!
+     */
+    private String createBooleanFilter(String... columns)
+    {
+        if(columns.length > 0)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("(");
+            for(int i = columns.length - 1; i > 0; i--)
+            {
+                sb.append(columns[i]).append("=1 or ");
+            }
+            sb.append(columns[0]);
+            sb.append(")");
+            return sb.toString();
+        }
+        return null;
+    }
+
+    /**
+     * TODO: remove for the product version!
+     */
+    private Cursor createCursor()
+    {
+        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
+        String[] columns = new String[]
+                {
+                        MediaStore.Audio.Media._ID,
+                        MediaStore.Audio.Media.TITLE,
+                        MediaStore.Audio.Media.TITLE_KEY
+                };
+
+        String filter = createBooleanFilter(MediaStore.Audio.AudioColumns.IS_ALARM);
+        String order = MediaStore.Audio.Media.DEFAULT_SORT_ORDER;
+
+        return this.getContentResolver().query(uri, columns, filter, null, order);
+    }
+
+    /**
+     * TODO: remove for the product version!
+     */
+    private void listAlarms() {
+        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Log.d(TAG,
+                " Uri permission:" +
+                Integer.toString(
+                        checkUriPermission(
+                                Uri.parse("content://media/external/"),
+                                android.os.Process.myPid(),
+                                android.os.Process.myUid(),
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                )
+        );
+
+        if(1==1)return;
+
+        Cursor c = createCursor();
+
+        if(c != null){
+            if(c.moveToFirst()) {
+                Log.d(TAG, c.getString(0) + c.getString(1)+c.getString(2));
+                while (c.moveToNext()) {
+                    Log.d(TAG, c.getString(0) + c.getString(1)+c.getString(2));
+                }
+            }
+        }
+    }
+
+//------------------------------------------
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,6 +239,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         if(DEBUG)Log.d(TAG, "OnCreate, First run "+Boolean.toString(firstRun));
         if(!firstRun)return; else firstRun=false;
+
+        /**
+         * TODO: remove for the product version!
+         */
+        if(DEBUG)listAlarms();
 
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_notification, false);
@@ -301,6 +386,18 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public void onDestroy() {
         super.onDestroy();
         //android.os.Process.killProcess(android.os.Process.myPid());
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(DEBUG)Log.d(TAG, "onPause()");
+    }
+
+    @Override
+    public void onResume() {
+        super.onPause();
+        if(DEBUG)Log.d(TAG, "onResume()");
     }
 
     @Override

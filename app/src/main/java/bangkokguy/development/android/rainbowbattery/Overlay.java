@@ -60,6 +60,11 @@ import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
  * DONE:Density independent font size in settings activity
  * DONE:Redesigned Sound Settings
  * DONE:Redesigned Settings Activity screen flow
+ * ---------------------------------------------
+ * V6.0 Hank
+ * DONE:Notification priority set to lowest
+ * DONE:Sound picker picks now Notification sound instead of Ringtone
+ * ---------------------------------------------
  * TODO:Make Full/Empty percent limit adjustable in settings
  * TODO:Make LED notification for low battery switchable in settings
  */
@@ -374,6 +379,8 @@ public class Overlay extends Service {
             }
         }
 
+        ncb.setDefaults(DEFAULT_LIGHTS);
+        ncb.setPriority(Notification.PRIORITY_MIN);
         if (eLEDon)
             if((isBatteryCharging) || (getBatteryPercent()<=15)){
                 if(DEBUG)Log.d(TAG,"Battery Charging or low");
@@ -388,9 +395,9 @@ public class Overlay extends Service {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             Notification noti = ncb.build();
-            startForeground(1, noti);
+            startForeground(42, noti);
         }
-        else nm.notify(1, ncb.build());
+        else nm.notify(42, ncb.build());
     }
 
     /**

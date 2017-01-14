@@ -10,6 +10,7 @@
             android:summary="@string/play_battery_full_sound_s" />
         <RingtonePreference
             android:dependency="play_battery_full_sound"
+            android:ringtoneType="alarm"
             android:key="battery_full_sound"
             android:summary="@string/battery_full_sound_s"
             android:title="@string/battery_full_sound" />
@@ -28,6 +29,7 @@
             android:summary="@string/play_battery_empty_sound_s" />
         <RingtonePreference
             android:dependency="play_battery_empty_sound"
+            android:ringtoneType="alarm"
             android:key="battery_empty_sound"
             android:summary="@string/battery_empty_sound_s"
             android:title="@string/battery_empty_sound" />
