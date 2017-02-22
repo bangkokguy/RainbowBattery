@@ -40,7 +40,8 @@ import static android.content.Intent.ACTION_SCREEN_ON;
 import static android.os.BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER;
 import static android.os.BatteryManager.BATTERY_STATUS_CHARGING;
 import static android.os.BatteryManager.BATTERY_STATUS_UNKNOWN;
-import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
+import static android.support.v4.app.NotificationCompat.CATEGORY_SERVICE;
+import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
 
 /*
  * DONE:Multipane setup
@@ -75,9 +76,9 @@ import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
 public class Overlay extends Service {
 
     final static String TAG="Overlay";
-    final static boolean DEBUG=false;
+    final static boolean DEBUG=true;
 
-    final static int ONMS=255;
+    final static int ONMS=4095/*255*/;
     final static int OFFMS=0;
     final static int OPAQUE=0xff;
     final static int MAX_STROKE_WIDTH = 0x0f;
@@ -100,10 +101,10 @@ public class Overlay extends Service {
     boolean isBatteryCharging = false;
     boolean isFastCharging = false;
 
-    int 	eHealth = 0;       //battery health
+    int 	eHealth = 0;        //battery health
     int 	eIconSmall = -1;    //resource ID of the small battery icon
     int 	eLevel = -1;        //battery percentage
-    int 	ePlugged = 5;      //0=battery... 5-no value present
+    int 	ePlugged = 5;       //0=battery... 5-no value present
     boolean ePresent = true;    //true if battery present
     int     eScale = -1;        //the maximum battery level
     int 	eStatus = 0;        //the current status constant
@@ -315,37 +316,40 @@ public class Overlay extends Service {
                 versionName;
         style.setSummaryText(extra);
 
-        NotificationCompat.Builder ncb =
-                new NotificationCompat.Builder(this)
-                        .setContentIntent(PendingIntent.getActivity(
+        NotificationCompat.Builder ncb = new NotificationCompat.Builder(this);
+        ncb
+                //.setDefaults(DEFAULT_LIGHTS)
+                //.setPriority(Notification.PRIORITY_MIN)
+                .setCategory(CATEGORY_SERVICE)
+                .setContentIntent(PendingIntent.getActivity(
+                        this,
+                        1,
+                        new Intent(this, SettingsActivity.class),
+                        0
+                    )
+                )
+                .setStyle(style)
+                .setColor(argbLedColor(getBatteryPercent()))
+                .setSmallIcon(R.drawable.ic_car_battery_white_48dp)
+                .setContentTitle(getString(R.string.app_title))
+                .setOngoing(true)
+                .addAction(icon, actionText,
+                        PendingIntent.getService(
                                 this,
                                 1,
-                                new Intent(this, SettingsActivity.class),
-                                0
-                            )
-                        )
-                        .setStyle(style)
-                        .setColor(argbLedColor(getBatteryPercent()))
-                        .setSmallIcon(R.drawable.ic_car_battery_white_48dp)
-                        .setContentTitle(getString(R.string.app_title))
-                        .setOngoing(true)
-                        .addAction(icon, actionText,
-                                PendingIntent.getService(
-                                        this,
-                                        1,
-                                        new Intent(this, Overlay.class)
-                                                .putExtra("showOverlay", !showOverlay)
-                                                .putExtra("batteryEmptySoundPlayedCount", batteryEmptySoundPlayedCount)
-                                                .putExtra("batteryFullSoundPlayedCount", batteryFullSoundPlayedCount),
-                                        PendingIntent.FLAG_CANCEL_CURRENT))
+                                new Intent(this, Overlay.class)
+                                        .putExtra("showOverlay", !showOverlay)
+                                        .putExtra("batteryEmptySoundPlayedCount", batteryEmptySoundPlayedCount)
+                                        .putExtra("batteryFullSoundPlayedCount", batteryFullSoundPlayedCount),
+                                PendingIntent.FLAG_CANCEL_CURRENT))
 
-                        .addAction(R.drawable.ic_power_grey600_24dp, "EXIT",
-                                PendingIntent.getService(
-                                        this,
-                                        2,
-                                        new Intent(this, Overlay.class)
-                                                .putExtra("STOP", true),
-                                        PendingIntent.FLAG_CANCEL_CURRENT));
+                .addAction(R.drawable.ic_power_grey600_24dp, "EXIT",
+                        PendingIntent.getService(
+                                this,
+                                2,
+                                new Intent(this, Overlay.class)
+                                        .putExtra("STOP", true),
+                                PendingIntent.FLAG_CANCEL_CURRENT));
 
         //The following part could be in "OnCreate()".
             //In that case the values should be changed whenever preferences had been changed.
@@ -357,10 +361,12 @@ public class Overlay extends Service {
         maxNumberOfBatteryEmptySoundPlayed = Integer.parseInt(preferences.getString("repeat_battery_empty_sound", "1"));
         //---
 
+        if(DEBUG)Log.d(TAG, "Full Sound Counter ="+Integer.toString(batteryFullSoundPlayedCount));
         if(isBatteryCharging) {
             if (playSoundIfBatteryFull) {
                 if (getBatteryPercent() >= BATTERY_FULL) {
                     if (batteryFullSoundPlayedCount++ < maxNumberOfBatteryFullSoundPlayed) {
+                        Log.d(TAG, "Play battery full sound");
                         ncb.setSound(Uri.parse(preferences.getString(
                                 "battery_full_sound",
                                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION).toString())));
@@ -379,12 +385,10 @@ public class Overlay extends Service {
             }
         }
 
-        ncb.setDefaults(DEFAULT_LIGHTS);
-        ncb.setPriority(Notification.PRIORITY_MIN);
         if (eLEDon)
             if((isBatteryCharging) || (getBatteryPercent()<=15)){
                 if(DEBUG)Log.d(TAG,"Battery Charging or low");
-                ncb.setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS);
+                ncb.setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS+1);
             }
             /*else {
                 if(DEBUG)Log.d(TAG,"Battery NOT Charging and not low");
@@ -393,11 +397,38 @@ public class Overlay extends Service {
                 ncb.setDefaults(DEFAULT_LIGHTS);
             }*/
 
+        Log.d(TAG, "Battery Percent="+Integer.toString(getBatteryPercent())
+                +" Battery Color="+Integer.toString(argbLedColor(getBatteryPercent())));
+        Log.d(TAG, "Flags=" + Integer.toString(setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS+1)));
+
+        Notification noti = ncb.build();
+        int n_id = 42;
+        if(preferences.getBoolean("suppress_notification", false))
+            n_id=0; else n_id=42;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            Notification noti = ncb.build();
-            startForeground(42, noti);
+            /*Notification noti = ncb.build();*/
+            startForeground(n_id, noti);
         }
-        else nm.notify(42, ncb.build());
+        else {
+            //noti.flags = noti.flags | FLAG_FOREGROUND_SERVICE | FLAG_SHOW_LIGHTS;
+            //noti.ledARGB = argbLedColor(getBatteryPercent());
+            //noti.ledOffMS = 0;
+            //noti.ledOnMS = 0;
+//            nm.notify(1, noti/*ncb.build()*/);
+            startForeground(n_id, noti);
+        }
+    }
+
+    public int setLights(/*@ColorInt*/ int argb, int onMs, int offMs) {
+        Notification mNotification = new Notification();
+        mNotification.ledARGB = argb;
+        mNotification.ledOnMS = onMs;
+        mNotification.ledOffMS = offMs;
+        mNotification.flags=FLAG_FOREGROUND_SERVICE;
+        boolean showLights = mNotification.ledOnMS != 0 && mNotification.ledOffMS != 0;
+        mNotification.flags = (mNotification.flags & ~Notification.FLAG_SHOW_LIGHTS) |
+            (showLights ? Notification.FLAG_SHOW_LIGHTS : 0);
+                   return mNotification.flags;
     }
 
     /**
@@ -493,8 +524,8 @@ public class Overlay extends Service {
             if(DEBUG)Log.d(TAG,"intent: "+intent.toString()+"intent extraInteger:"+Integer.toString(intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)));
 
             switch (intent.getAction()) { // @formatter:off
-                case ACTION_SCREEN_OFF: if(DEBUG)Log.d(TAG,"case screen off"); break;
-                case ACTION_SCREEN_ON: if(DEBUG)Log.d(TAG,"case screen on"); break;
+                case ACTION_SCREEN_OFF: if(DEBUG)Log.d(TAG,"case screen off"); showNotification(); break;
+                case ACTION_SCREEN_ON: if(DEBUG)Log.d(TAG,"case screen on"); showNotification(); break;
                 case ACTION_BATTERY_CHANGED: if(DEBUG)Log.d(TAG,"case battery changed");
                     if(DEBUG)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

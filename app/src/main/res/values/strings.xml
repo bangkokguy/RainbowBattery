@@ -35,6 +35,12 @@
         If on, the notification message will display
         extra debugging information. Only for developer.
         </string>
+    <string name="suppress_notification">Suppress notification</string>
+    <string name="suppress_notification_s">
+        If on, the notification message will suppressed.
+        In this case you should manually start the application
+        whenever you want to change any of its parameters.
+        </string>
 
     <!-- Battery notification settings -->
     <string name="battery_sound">Sound settings</string>

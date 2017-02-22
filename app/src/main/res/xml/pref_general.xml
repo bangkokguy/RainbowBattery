@@ -11,6 +11,7 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="led_on"
+            android:dependency="suppress_notification"
             android:summary="@string/led_on_s"
             android:title="@string/led_on" />
         <SwitchPreference
@@ -19,6 +20,12 @@
             android:key="extra_text"
             android:summary="@string/extra_text_s"
             android:title="@string/extra_text" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="suppress_notification"
+            android:disableDependentsState="true"
+            android:summary="@string/suppress_notification_s"
+            android:title="@string/suppress_notification" />
 
     </PreferenceCategory>
 

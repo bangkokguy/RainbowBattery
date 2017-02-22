@@ -7,8 +7,8 @@ android {
         applicationId "bangkokguy.development.android.rainbowbattery"
         minSdkVersion 16
         targetSdkVersion 24
-        versionCode 6
-        versionName "Hank"
+        versionCode 7
+        versionName "Marie"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
