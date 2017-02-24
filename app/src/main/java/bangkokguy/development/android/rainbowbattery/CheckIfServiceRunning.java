@@ -7,7 +7,7 @@ import android.util.Log;
 
 public class CheckIfServiceRunning extends BroadcastReceiver {
     static final String TAG = "CheckIfServiceRunning";
-    static final boolean DEBUG = true;
+    static final boolean DEBUG = BuildConfig.BUILD_TYPE == "debug";//true;
 
     public CheckIfServiceRunning() {
     }

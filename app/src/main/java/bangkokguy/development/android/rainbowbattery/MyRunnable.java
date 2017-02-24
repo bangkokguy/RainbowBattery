@@ -8,7 +8,7 @@ import android.util.Log;
 class MyRunnable implements Runnable {
 
     private final static String TAG="MyRunnable";
-    private final static boolean DEBUG=false;
+    private final static boolean DEBUG=BuildConfig.BUILD_TYPE == "debug";//false;
 
     private OnFinishListener    mOnFinishListener;
     private boolean             isCanceled;

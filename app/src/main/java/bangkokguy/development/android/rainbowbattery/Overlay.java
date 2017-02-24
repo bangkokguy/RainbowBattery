@@ -76,7 +76,7 @@ import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
 public class Overlay extends Service {
 
     final static String TAG="Overlay";
-    final static boolean DEBUG=true;
+    final static boolean DEBUG=BuildConfig.BUILD_TYPE == "debug"; //true;
 
     final static int ONMS=4095/*255*/;
     final static int OFFMS=0;
@@ -397,9 +397,9 @@ public class Overlay extends Service {
                 ncb.setDefaults(DEFAULT_LIGHTS);
             }*/
 
-        Log.d(TAG, "Battery Percent="+Integer.toString(getBatteryPercent())
+        if(DEBUG)Log.d(TAG, "Battery Percent="+Integer.toString(getBatteryPercent())
                 +" Battery Color="+Integer.toString(argbLedColor(getBatteryPercent())));
-        Log.d(TAG, "Flags=" + Integer.toString(setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS+1)));
+        if(DEBUG)Log.d(TAG, "Flags=" + Integer.toString(setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS+1)));
 
         Notification noti = ncb.build();
         int n_id = 42;

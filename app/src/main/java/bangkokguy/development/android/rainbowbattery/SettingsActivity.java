@@ -51,7 +51,7 @@ import static java.security.AccessController.getContext;
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
     final static String TAG="SettingsActivity";
-    final static boolean DEBUG = true;
+    final static boolean DEBUG = BuildConfig.BUILD_TYPE == "debug"; //true;
 
     static boolean firstRun = true;
     static int adb = 0;
@@ -159,91 +159,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     .putExtra("batteryFullSoundPlayedCount", 0));
         }
     }
-//------------------------------------------
-    /**
-     * TODO: remove for the product version!
-     */
-    private String createBooleanFilter(String... columns)
-    {
-        if(columns.length > 0)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("(");
-            for(int i = columns.length - 1; i > 0; i--)
-            {
-                sb.append(columns[i]).append("=1 or ");
-            }
-            sb.append(columns[0]);
-            sb.append(")");
-            return sb.toString();
-        }
-        return null;
-    }
 
-    /**
-     * TODO: remove for the product version!
-     */
-    private Cursor createCursor()
-    {
-        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-
-        String[] columns = new String[]
-                {
-                        MediaStore.Audio.Media._ID,
-                        MediaStore.Audio.Media.TITLE,
-                        MediaStore.Audio.Media.TITLE_KEY
-                };
-
-        String filter = createBooleanFilter(MediaStore.Audio.AudioColumns.IS_ALARM);
-        String order = MediaStore.Audio.Media.DEFAULT_SORT_ORDER;
-
-        return this.getContentResolver().query(uri, columns, filter, null, order);
-    }
-
-    /**
-     * TODO: remove for the product version!
-     */
-    private void listAlarms() {
-        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Log.d(TAG,
-                " Uri permission:" +
-                Integer.toString(
-                        checkUriPermission(
-                                Uri.parse("content://media/external/"),
-                                android.os.Process.myPid(),
-                                android.os.Process.myUid(),
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                )
-        );
-
-        if(1==1)return;
-
-        Cursor c = createCursor();
-
-        if(c != null){
-            if(c.moveToFirst()) {
-                Log.d(TAG, c.getString(0) + c.getString(1)+c.getString(2));
-                while (c.moveToNext()) {
-                    Log.d(TAG, c.getString(0) + c.getString(1)+c.getString(2));
-                }
-            }
-        }
-    }
-
-//------------------------------------------
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
 
+        Log.d(TAG, "Build_Type:"+BuildConfig.BUILD_TYPE);
         if(DEBUG)Log.d(TAG, "OnCreate, First run "+Boolean.toString(firstRun));
         if(!firstRun)return; else firstRun=false;
-
-        /**
-         * TODO: remove for the product version!
-         */
-        if(DEBUG)listAlarms();
 
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_notification, false);
