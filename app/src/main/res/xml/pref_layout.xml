@@ -12,6 +12,16 @@
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
             android:title="@string/pref_bar_thickness" />
+
+        <ListPreference
+            android:defaultValue="1"
+            android:summary="@string/pref_bar_position_s"
+            android:entries="@array/pref_bar_position_titles"
+            android:entryValues="@array/pref_bar_position_values"
+            android:key="bar_position"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/pref_bar_position" />
     </PreferenceCategory>
 
 </PreferenceScreen>

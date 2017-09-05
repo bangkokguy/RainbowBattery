@@ -11,7 +11,8 @@ import static android.content.Intent.ACTION_BOOT_COMPLETED;
 
 public class BootCompletedReceiver extends BroadcastReceiver {
 
-    final String TAG = "BootCompletedReceiver";
+    final static String TAG = "BootCompletedReceiver";
+    final static boolean DEBUG = BuildConfig.BUILD_TYPE.equals("debug"); //true;
 
     public BootCompletedReceiver() {
         super();

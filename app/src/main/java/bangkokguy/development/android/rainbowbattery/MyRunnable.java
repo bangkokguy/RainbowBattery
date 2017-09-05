@@ -8,7 +8,7 @@ import android.util.Log;
 class MyRunnable implements Runnable {
 
     private final static String TAG="MyRunnable";
-    private final static boolean DEBUG=BuildConfig.BUILD_TYPE == "debug";//false;
+    private final static boolean DEBUG=BuildConfig.BUILD_TYPE.equals("debug"); //true;
 
     private OnFinishListener    mOnFinishListener;
     private boolean             isCanceled;
@@ -33,7 +33,7 @@ class MyRunnable implements Runnable {
     public void run() {
         barView.invalidate();
         if (!isCanceled) {
-            if(DEBUG)Log.d(TAG,"myrunnable->cancel false");
+            //if(DEBUG)Log.d(TAG,"myrunnable->cancel false");
             if(o.mHandler!=null)o.mHandler.postDelayed(this, 300);
         } else if(DEBUG)Log.d(TAG,"myrunnable->cancel true");
         notifyFinish();

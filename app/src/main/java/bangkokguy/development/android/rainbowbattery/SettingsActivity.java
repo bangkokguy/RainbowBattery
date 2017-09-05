@@ -51,7 +51,7 @@ import static java.security.AccessController.getContext;
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
     final static String TAG="SettingsActivity";
-    final static boolean DEBUG = BuildConfig.BUILD_TYPE == "debug"; //true;
+    final static boolean DEBUG = BuildConfig.BUILD_TYPE.equals("debug"); //true;
 
     static boolean firstRun = true;
     static int adb = 0;
@@ -321,7 +321,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     @Override
     public void onResume() {
-        super.onPause();
+        super.onResume();
         if(DEBUG)Log.d(TAG, "onResume()");
     }
 
@@ -439,6 +439,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines. No boolean values are bound.
             bindPreferenceSummaryToValue(findPreference("bar_thickness"));
+            bindPreferenceSummaryToValue(findPreference("bar_position"));
             if(DEBUG)Log.d(TAG, "after bindPreferenceSummaryToValue");
         }
 

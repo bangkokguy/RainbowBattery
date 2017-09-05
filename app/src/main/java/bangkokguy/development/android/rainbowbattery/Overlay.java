@@ -37,9 +37,11 @@ import static android.content.Intent.ACTION_POWER_CONNECTED;
 import static android.content.Intent.ACTION_POWER_DISCONNECTED;
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_SCREEN_ON;
+import static android.os.BatteryManager.BATTERY_PLUGGED_AC;
+import static android.os.BatteryManager.BATTERY_PLUGGED_USB;
+import static android.os.BatteryManager.BATTERY_PLUGGED_WIRELESS;
 import static android.os.BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER;
 import static android.os.BatteryManager.BATTERY_STATUS_CHARGING;
-import static android.os.BatteryManager.BATTERY_STATUS_UNKNOWN;
 import static android.support.v4.app.NotificationCompat.CATEGORY_SERVICE;
 import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
 
@@ -68,6 +70,8 @@ import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
  * ---------------------------------------------
  * TODO:Make Full/Empty percent limit adjustable in settings
  * TODO:Make LED notification for low battery switchable in settings
+ * TODO:Make possible to position the bar on any side of the screen
+ * Make it possible to display the bar at any side of the screen.
  */
 
 /**---------------------------------------------------------------------------
@@ -76,12 +80,19 @@ import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
 public class Overlay extends Service {
 
     final static String TAG="Overlay";
-    final static boolean DEBUG=BuildConfig.BUILD_TYPE == "debug"; //true;
+    final static boolean DEBUG=BuildConfig.BUILD_TYPE.equals("debug"); //true;
 
     final static int ONMS=4095/*255*/;
     final static int OFFMS=0;
     final static int OPAQUE=0xff;
     final static int MAX_STROKE_WIDTH = 0x0f;
+
+    final static int TOP = 0;
+    final static int BOTTOM = 1;
+    final static int LEFT_TOP_DOWN = 2;
+    final static int LEFT_DOWN_TOP = 3;
+    final static int RIGHT_TOP_DOWN = 4;
+    final static int RIGHT_DOWN_TOP = 5;
 
     NotificationManagerCompat nm;
     BatteryManager bm;
@@ -93,9 +104,13 @@ public class Overlay extends Service {
     Display display;
     int screenWidth;
     int screenHeight;
+    int barPosition;
+    int barHeight;
 
     String  versionName = "";
     String  stopCode = "";
+
+    boolean screenOn = true;
     boolean showOverlay;
     boolean stopService = false;
     boolean isBatteryCharging = false;
@@ -155,14 +170,14 @@ public class Overlay extends Service {
 
         sharedPref = this.getSharedPreferences(
                 getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences.registerOnSharedPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
         nm = NotificationManagerCompat.from(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             bm = (BatteryManager) this.getSystemService(Context.BATTERY_SERVICE);
         }
 
-        barView = initBarView(this);
-        myRunnable.setBarView(barView);
         receiveBroadcast = new ReceiveBroadcast();
 
         this.registerReceiver(
@@ -185,9 +200,8 @@ public class Overlay extends Service {
                 receiveBroadcast,
                 new IntentFilter(ACTION_POWER_CONNECTED));
 
-
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        preferences.registerOnSharedPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
+        barView = initBarView(this);
+        myRunnable.setBarView(barView);
 
         MyRunnable.OnFinishListener onFinishListener = new MyRunnable.OnFinishListener() {
             @Override
@@ -261,7 +275,7 @@ public class Overlay extends Service {
         barView.setColor(argbLedColor(getBatteryPercent()));
         barView.setLength(screenWidth*getBatteryPercent()/100);
 
-        if(isBatteryCharging) {
+        if(isBatteryCharging&&screenOn) {
             mHandler.removeCallbacks(myRunnable);
             myRunnable.start();
             mHandler.post(myRunnable);
@@ -307,6 +321,10 @@ public class Overlay extends Service {
         try {i = Integer.parseInt(preferences.getString("bar_thickness", "-1"));}
             catch(NumberFormatException nfe) {i=-1;}
         if(i>-1)barView.setStrokeWidth(i);
+
+        try {i = Integer.parseInt(preferences.getString("bar_position", "0"));}
+        catch(NumberFormatException nfe) {i=0;}
+        barPosition=i;
 
         eExtraText = preferences.getBoolean("extra_text", false);
         String extra =
@@ -438,12 +456,13 @@ public class Overlay extends Service {
     public class DrawView extends View {
         Paint paint, p;
         int barLength;
+        int barPosition;
 
-        public DrawView(Context context, int argb, int length) {
-            this(context, argb, length, MAX_STROKE_WIDTH);
+        public DrawView(Context context, int argb, int length, int barPosition) {
+            this(context, argb, length, barPosition, barHeight);
         }
 
-        public DrawView(Context context, int argb, int barLength, int strokeWidth) {
+        public DrawView(Context context, int argb, int barLength, int barPosition, int strokeWidth) {
             super(context);
             paint = new Paint();
             p = new Paint();
@@ -456,6 +475,7 @@ public class Overlay extends Service {
             setColor(argb);
             setStrokeWidth(strokeWidth);
             setLength(barLength);
+            setPosition(barPosition);
             setBackgroundColor(Color.TRANSPARENT);
         }
 
@@ -464,9 +484,9 @@ public class Overlay extends Service {
             p.setColor((0xFFFFFF - argb) | 0xFF000000);
         }
 
-        public void setLength(int barLength) {
-            this.barLength=barLength;
-        }
+        public void setLength(int barLength) {this.barLength=barLength; }
+
+        public void setPosition(int barPosition) { this.barPosition=barPosition; }
 
         public void setStrokeWidth(int strokeWidth){
             paint.setStrokeWidth(strokeWidth);
@@ -480,7 +500,10 @@ public class Overlay extends Service {
 
         @Override
         public void onDraw(Canvas canvas) {
-            canvas.drawLine(0, 0, barLength, 0, paint);
+            //canvas.drawLine(0, 0, barLength, 0, paint);
+            if (barPosition == TOP||barPosition==BOTTOM) canvas.drawLine(0, 0, barLength, 0, paint);
+            //if (barPosition == BOTTOM) canvas.drawLine(0, 0, barLength, 0, paint);
+            //canvas.drawLine(LEFT, TOP, TOP, barLength, paint);
             if (isBatteryCharging) {
                 len = LEN;
                 step = STEP;
@@ -524,15 +547,15 @@ public class Overlay extends Service {
             if(DEBUG)Log.d(TAG,"intent: "+intent.toString()+"intent extraInteger:"+Integer.toString(intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)));
 
             switch (intent.getAction()) { // @formatter:off
-                case ACTION_SCREEN_OFF: if(DEBUG)Log.d(TAG,"case screen off"); showNotification(); break;
-                case ACTION_SCREEN_ON: if(DEBUG)Log.d(TAG,"case screen on"); showNotification(); break;
+                case ACTION_SCREEN_OFF: screenOn = false; if(DEBUG)Log.d(TAG,"case screen off"); showNotification(); break;
+                case ACTION_SCREEN_ON: screenOn = true; if(DEBUG)Log.d(TAG,"case screen on"); showNotification(); break;
                 case ACTION_BATTERY_CHANGED: if(DEBUG)Log.d(TAG,"case battery changed");
                     if(DEBUG)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             Log.d(TAG, "BATTERY_PROPERTY_CURRENT_NOW="+Integer.toString(bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)));
                             Log.d(TAG, "BATTERY_PROPERTY_CURRENT_AVERAGE="+Integer.toString(bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)));
                             Log.d(TAG, "BATTERY_PROPERTY_CHARGE_COUNTER="+Integer.toString(BATTERY_PROPERTY_CHARGE_COUNTER));
-                    }
+                        }
                 //get extra info from intent
                     eHealth = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, 0);
                     eIconSmall = intent.getIntExtra(BatteryManager.EXTRA_ICON_SMALL, -1);
@@ -545,8 +568,8 @@ public class Overlay extends Service {
                     eTemperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
                     eVoltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
                 //prepare global variables
-                    isBatteryCharging=(ePlugged==BATTERY_STATUS_CHARGING||ePlugged==BATTERY_STATUS_UNKNOWN);
-                    isFastCharging=(ePlugged==BATTERY_STATUS_UNKNOWN);
+                    isBatteryCharging = isBatteryCharging();
+                    isFastCharging=false; //(ePlugged==BATTERY_STATUS_UNKNOWN);
                 //at last show the notification with the actual data
                     showNotification();
                     break;
@@ -563,7 +586,16 @@ public class Overlay extends Service {
         }
     }
 
-    /**---------------------------------------------------------------------------
+    boolean isBatteryCharging() {
+        //isBatteryCharging=(ePlugged==BATTERY_STATUS_CHARGING||ePlugged==BATTERY_STATUS_UNKNOWN);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return ePlugged==BATTERY_PLUGGED_AC
+                    ||ePlugged==BATTERY_PLUGGED_USB
+                    ||ePlugged==BATTERY_PLUGGED_WIRELESS;}
+        else return eStatus == BATTERY_STATUS_CHARGING;
+    }
+
+     /**---------------------------------------------------------------------------
      * Prepare the overlay view
      * @param context the application context (Context)
      * @return the overlay view (DrawView)
@@ -576,18 +608,34 @@ public class Overlay extends Service {
         screenWidth = size.x;
         screenHeight = size.y;
 
+        int i;
+        try {i = Integer.parseInt(preferences.getString("bar_thickness", Integer.toString(MAX_STROKE_WIDTH)));}
+        catch(NumberFormatException nfe) {i=MAX_STROKE_WIDTH;}
+        barHeight=i;
+        if(DEBUG)Log.d(TAG, "barHeight=" + Integer.toString(barHeight));
+
+        try {i = Integer.parseInt(preferences.getString("bar_position", "0"));}
+        catch(NumberFormatException nfe) {i=0;}
+        barPosition=i;
+        if(DEBUG)Log.d(TAG, "barPosition="+barPosition);
+
         WindowManager.LayoutParams params = new
                 WindowManager.LayoutParams (
-                        screenWidth, MAX_STROKE_WIDTH,
+                    //barHEIGHT, screenHeight,
+                        screenWidth,
+                        barHeight,
+//                        (barPosition == TOP) ? Gravity.BOTTOM-MAX_STROKE_WIDTH : Gravity.TOP,
+  //                      Gravity.START,
                         WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY, //TYPE_SYSTEM_ALERT
                         WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, //FLAG_WATCH_OUTSIDE_TOUCH,
                         PixelFormat.TRANSPARENT
                 );
 
-        params.gravity = Gravity.TOP; //CENTER
+        if(barPosition==TOP)params.gravity = Gravity.TOP;//BOTTOM;//TOP; //CENTER
+        if(barPosition==BOTTOM)params.gravity = Gravity.BOTTOM;
 
         if(barView!=null)wm.removeViewImmediate(barView);
-        DrawView barView = new DrawView(this, argbLedColor(getBatteryPercent()), screenWidth);
+        DrawView barView = new DrawView(this, argbLedColor(getBatteryPercent()), screenWidth, barPosition);
         try {
             wm.addView(barView, params);
         } catch (java.lang.SecurityException e)  {
@@ -727,6 +775,7 @@ public class Overlay extends Service {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
             if(DEBUG)Log.d(TAG, "Preference:"+sharedPreferences.toString()+" Value:"+s);
+            onConfigurationChanged(new Configuration());
             if(isMyServiceRunning(Overlay.class))showNotification();
         }
     };
