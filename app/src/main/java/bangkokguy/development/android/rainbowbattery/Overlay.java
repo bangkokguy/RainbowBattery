@@ -85,7 +85,7 @@ public class Overlay extends Service {
     final static int ONMS=4095/*255*/;
     final static int OFFMS=0;
     final static int OPAQUE=0xff;
-    final static int MAX_STROKE_WIDTH = 0x0f;
+    final static int MAX_STROKE_WIDTH = 0x10;
 
     final static int TOP = 0;
     final static int BOTTOM = 1;
@@ -208,7 +208,10 @@ public class Overlay extends Service {
             public void onFinish() {
                 if(myRunnable.isCanceled()) {
                     barView.setColor(argbLedColor(getBatteryPercent()));
-                    barView.setLength(screenWidth*getBatteryPercent()/100);
+                    barView.setLength(
+                            ((barPosition==TOP||barPosition==BOTTOM) ? screenWidth : screenHeight)
+                            //screenWidth
+                                    *getBatteryPercent()/100);
                     barView.invalidate();
                 }
             }
@@ -273,7 +276,10 @@ public class Overlay extends Service {
 
         myRunnable.cancel();
         barView.setColor(argbLedColor(getBatteryPercent()));
-        barView.setLength(screenWidth*getBatteryPercent()/100);
+        barView.setLength(
+                ((barPosition==TOP||barPosition==BOTTOM) ? screenWidth : screenHeight)
+                //screenWidth
+                        *getBatteryPercent()/100);
 
         if(isBatteryCharging&&screenOn) {
             mHandler.removeCallbacks(myRunnable);
@@ -484,7 +490,9 @@ public class Overlay extends Service {
             p.setColor((0xFFFFFF - argb) | 0xFF000000);
         }
 
-        public void setLength(int barLength) {this.barLength=barLength; }
+        public void setLength(int barLength) {
+            Log.d(TAG, "barlength="+ Integer.toString(barLength));
+                    this.barLength=barLength; }
 
         public void setPosition(int barPosition) { this.barPosition=barPosition; }
 
@@ -501,7 +509,24 @@ public class Overlay extends Service {
         @Override
         public void onDraw(Canvas canvas) {
             //canvas.drawLine(0, 0, barLength, 0, paint);
-            if (barPosition == TOP||barPosition==BOTTOM) canvas.drawLine(0, 0, barLength, 0, paint);
+            boolean horizontal=(barPosition==TOP||barPosition==BOTTOM);
+            boolean downTop=(barPosition==LEFT_DOWN_TOP||barPosition==RIGHT_DOWN_TOP);
+            Log.d(TAG, "screenHeight="+Integer.toString(screenHeight));
+            if (horizontal) canvas.drawLine(0, 0, barLength, 0, paint);
+            else {
+                canvas.rotate(90);
+                canvas.drawLine(/*screenHeight-barLength*/0, 0, /*screenHeight*/barLength, 0, paint);
+                if (downTop) {
+                    setPivotX(0);
+                    setPivotY(screenHeight / 2);
+                    setRotation(180);
+                }
+            }
+               /* if (topDown)
+                                  //from x, from y, to x, to y
+                    canvas.drawLine(     0,      0,    0,    barLength, paint);
+                    else
+                        canvas.drawLine(     0,      screenHeight-barLength,    0,    barLength, paint);*/
             //if (barPosition == BOTTOM) canvas.drawLine(0, 0, barLength, 0, paint);
             //canvas.drawLine(LEFT, TOP, TOP, barLength, paint);
             if (isBatteryCharging) {
@@ -619,23 +644,49 @@ public class Overlay extends Service {
         barPosition=i;
         if(DEBUG)Log.d(TAG, "barPosition="+barPosition);
 
+        boolean horizontal=(barPosition==TOP||barPosition==BOTTOM);
+        boolean left=(horizontal||barPosition==LEFT_TOP_DOWN||barPosition==LEFT_DOWN_TOP);
+
         WindowManager.LayoutParams params = new
                 WindowManager.LayoutParams (
-                    //barHEIGHT, screenHeight,
-                        screenWidth,
-                        barHeight,
-//                        (barPosition == TOP) ? Gravity.BOTTOM-MAX_STROKE_WIDTH : Gravity.TOP,
-  //                      Gravity.START,
+                        (horizontal ? screenWidth    : (barHeight / 2)), //width
+                        (horizontal ? (barHeight / 2)  : screenHeight),  //height
+
+                        //left ? 0 : screenWidth-barHeight,   //x-pos
+                        //0,                                  //y-pos
+
                         WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY, //TYPE_SYSTEM_ALERT
                         WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, //FLAG_WATCH_OUTSIDE_TOUCH,
-                        PixelFormat.TRANSPARENT
+                        PixelFormat./*OPAQUE*/TRANSPARENT
                 );
 
-        if(barPosition==TOP)params.gravity = Gravity.TOP;//BOTTOM;//TOP; //CENTER
-        if(barPosition==BOTTOM)params.gravity = Gravity.BOTTOM;
+/*        final static int LEFT_TOP_DOWN = 2;
+        final static int LEFT_DOWN_TOP = 3;
+        final static int RIGHT_TOP_DOWN = 4;
+        final static int RIGHT_DOWN_TOP = 5;*/
+
+        if(barPosition==TOP)
+                //||barPosition==LEFT_TOP_DOWN
+                //||barPosition==RIGHT_TOP_DOWN)
+            params.gravity = Gravity.TOP;//BOTTOM;//TOP; //CENTER
+        else
+            if(barPosition==BOTTOM)
+                  //  ||barPosition==LEFT_DOWN_TOP
+                  //  ||barPosition==RIGHT_DOWN_TOP)
+                params.gravity = Gravity.BOTTOM;
+            else
+                if(barPosition==LEFT_DOWN_TOP||barPosition==LEFT_TOP_DOWN)
+                    params.gravity=Gravity.LEFT;
+                else
+                    params.gravity=Gravity.RIGHT;
 
         if(barView!=null)wm.removeViewImmediate(barView);
-        DrawView barView = new DrawView(this, argbLedColor(getBatteryPercent()), screenWidth, barPosition);
+        DrawView barView =
+                new DrawView(
+                        this,
+                        argbLedColor(getBatteryPercent()),
+                        ((barPosition==TOP||barPosition==BOTTOM) ? screenWidth : screenHeight),
+                        barPosition);
         try {
             wm.addView(barView, params);
         } catch (java.lang.SecurityException e)  {
@@ -679,8 +730,7 @@ public class Overlay extends Service {
 
         stopCode = sharedPref.getString("stop_code", "");
         //to prevent misleading information, clear the stop code
-        sharedPref.edit().putString("stop_code","")
-                .commit();
+        sharedPref.edit().putString("stop_code","") .commit();
 
         if(stopService)stopSelf();
 
@@ -745,7 +795,9 @@ public class Overlay extends Service {
         super.onConfigurationChanged(newConfig);
         if(DEBUG)Log.d(TAG, Integer.toString(newConfig.orientation) + ":::" +newConfig.toString());
 
+        //DrawView svbarView = barView;
         barView = initBarView(this);
+        //wm.removeView(svbarView);
         myRunnable.setBarView(barView);
 
         showNotification();
