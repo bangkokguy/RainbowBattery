@@ -70,8 +70,8 @@ import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
  * ---------------------------------------------
  * TODO:Make Full/Empty percent limit adjustable in settings
  * TODO:Make LED notification for low battery switchable in settings
- * TODO:Make possible to position the bar on any side of the screen
- * Make it possible to display the bar at any side of the screen.
+ * DONE:Make it possible to position the bar on any side of the screen
+ * TODO:Display "About" data in activity
  */
 
 /**---------------------------------------------------------------------------
@@ -511,7 +511,7 @@ public class Overlay extends Service {
 
             boolean horizontal=(barPosition==TOP||barPosition==BOTTOM);
             boolean downTop=(barPosition==LEFT_DOWN_TOP||barPosition==RIGHT_DOWN_TOP);
-            Log.d(TAG, "screenHeight="+Integer.toString(screenHeight));
+            //Log.d(TAG, "screenHeight="+Integer.toString(screenHeight));
 
             if (horizontal) canvas.drawLine(0, 0, barLength, 0, paint);
             else {

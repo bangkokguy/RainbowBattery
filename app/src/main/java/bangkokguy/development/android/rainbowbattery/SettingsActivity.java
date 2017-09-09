@@ -1,23 +1,19 @@
 package bangkokguy.development.android.rainbowbattery;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
@@ -33,9 +29,6 @@ import android.widget.Toast;
 import java.util.List;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static android.content.Intent.FLAG_GRANT_PREFIX_URI_PERMISSION;
-import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
-import static java.security.AccessController.getContext;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -48,7 +41,9 @@ import static java.security.AccessController.getContext;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends AppCompatPreferenceActivity {
+public class SettingsActivity extends AppCompatPreferenceActivity
+implements AboutPreferenceFragment.OnFragmentInteractionListener {
+
 
     final static String TAG="SettingsActivity";
     final static boolean DEBUG = BuildConfig.BUILD_TYPE.equals("debug"); //true;
@@ -160,11 +155,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
+    static Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+
+        context = getApplicationContext();
 
         Log.d(TAG, "Build_Type:"+BuildConfig.BUILD_TYPE);
         if(DEBUG)Log.d(TAG, "OnCreate, First run "+Boolean.toString(firstRun));
@@ -240,6 +238,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 if(DEBUG)Toast.makeText(SettingsActivity.this, "Permission Granted.", Toast.LENGTH_LONG).show();
             }
         });
+
     }
 
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1234;
@@ -300,11 +299,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * Make sure to deny any unknown fragments here.
      */
     protected boolean isValidFragment(String fragmentName) {
+        Log.d(TAG, "fragmentName="+fragmentName);
+        Log.d(TAG, "fragmentClassName="+AboutPreferenceFragment.class.getName());
+
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralPreferenceFragment.class.getName().equals(fragmentName)
                 || LayoutPreferenceFragment.class.getName().equals(fragmentName)
                 || SoundPreferenceFragment.class.getName().equals(fragmentName)
-                || NotificationPreferenceFragment.class.getName().equals(fragmentName);
+                || NotificationPreferenceFragment.class.getName().equals(fragmentName)
+                || AboutPreferenceFragment.class.getName().equals(fragmentName);
     }
 
     @Override
@@ -333,6 +336,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+        Log.d(TAG, "onFragmentInteraction");
     }
 
     /**
@@ -454,4 +462,36 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
+    /**
+     * This fragment shows general preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+/*    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class AboutPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_about);
+            setHasOptionsMenu(true);
+
+            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
+            // to their values. When their values change, their summaries are
+            // updated to reflect the new value, per the Android Design
+            // guidelines. No boolean values are bound.
+            //bindPreferenceSummaryToValue(findPreference("krrr"));
+            //bindPreferenceSummaryToValue(findPreference("bar_position"));
+            //if(DEBUG)Log.d(TAG, "after bindPreferenceSummaryToValue");
+            Preference p = this.findPreference("krrr");
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                getFragmentManager().popBackStack();
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
+    }*/
 }
