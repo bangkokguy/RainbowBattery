@@ -71,7 +71,9 @@ import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
  * TODO:Make Full/Empty percent limit adjustable in settings
  * TODO:Make LED notification for low battery switchable in settings
  * DONE:Make it possible to position the bar on any side of the screen
- * TODO:Display "About" data in activity
+ * DONE:Display "About" data in activity
+ *
+ * Releases: Jesse, hank, marie, skyler, walter, gustavo
  */
 
 /**---------------------------------------------------------------------------
