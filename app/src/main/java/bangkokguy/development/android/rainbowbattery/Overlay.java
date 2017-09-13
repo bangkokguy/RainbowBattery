@@ -72,6 +72,7 @@ import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
  * TODO:Make LED notification for low battery switchable in settings
  * DONE:Make it possible to position the bar on any side of the screen
  * DONE:Display "About" data in activity
+ * TODO:With new install the initial battery bar parameters are different as defined in the settings -> bug
  *
  * Releases: Jesse, hank, marie, skyler, walter, gustavo
  */
@@ -326,13 +327,16 @@ public class Overlay extends Service {
         eLEDon = preferences.getBoolean("led_on", false);
 
         int i;
-        try {i = Integer.parseInt(preferences.getString("bar_thickness", "-1"));}
-            catch(NumberFormatException nfe) {i=-1;}
-        if(i>-1)barView.setStrokeWidth(i);
+        try {i = Integer.parseInt(
+                preferences.getString("bar_thickness", getString(R.string.pref_bar_thickness_default)));}
+            catch(NumberFormatException nfe) {i=8;}
+        barView.setStrokeWidth(i);
 
-        try {i = Integer.parseInt(preferences.getString("bar_position", "0"));}
+        try {i = Integer.parseInt(
+                preferences.getString("bar_position", getString(R.string.pref_bar_position_default)));}
         catch(NumberFormatException nfe) {i=0;}
-        barPosition=i;
+        //barPosition=i;
+        barView.setPosition(i);
 
         eExtraText = preferences.getBoolean("extra_text", false);
         String extra =
@@ -631,12 +635,14 @@ public class Overlay extends Service {
         screenHeight = size.y;
 
         int i;
-        try {i = Integer.parseInt(preferences.getString("bar_thickness", Integer.toString(MAX_STROKE_WIDTH)));}
-        catch(NumberFormatException nfe) {i=MAX_STROKE_WIDTH;}
+        try {i = Integer.parseInt(
+                preferences.getString("bar_thickness", getString(R.string.pref_bar_thickness_default)));}
+        catch(NumberFormatException nfe) {i=8;}
         barHeight=i;
         if(DEBUG)Log.d(TAG, "barHeight=" + Integer.toString(barHeight));
 
-        try {i = Integer.parseInt(preferences.getString("bar_position", "0"));}
+        try {i = Integer.parseInt(
+                preferences.getString("bar_position", getString(R.string.pref_bar_position_default)));}
         catch(NumberFormatException nfe) {i=0;}
         barPosition=i;
         if(DEBUG)Log.d(TAG, "barPosition="+barPosition);

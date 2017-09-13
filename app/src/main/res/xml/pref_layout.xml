@@ -4,7 +4,7 @@
         android:title="@string/bar_layout">
 
         <ListPreference
-            android:defaultValue="8"
+            android:defaultValue="@string/pref_bar_thickness_default"
             android:summary="@string/pref_bar_thickness_s"
             android:entries="@array/pref_bar_thickness_titles"
             android:entryValues="@array/pref_bar_thickness_values"
@@ -14,7 +14,7 @@
             android:title="@string/pref_bar_thickness" />
 
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="@string/pref_bar_position_default"
             android:summary="@string/pref_bar_position_s"
             android:entries="@array/pref_bar_position_titles"
             android:entryValues="@array/pref_bar_position_values"

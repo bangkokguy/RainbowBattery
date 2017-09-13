@@ -114,6 +114,9 @@
         <item>16</item>
         <item>32</item>
     </string-array>
+
+    <string name="pref_bar_thickness_default">8</string>
+
     <!--Battery Bar Position -->
     <string name="bar_position">Battery Bar Position</string>
     <string name="pref_bar_position">Battery bar position</string>
@@ -135,6 +138,7 @@
         <item>5</item>
     </string-array>
 
+    <string name="pref_bar_position_default">0</string>
 
     <!--Message attributes-->
     <!--Settings activity keyword text-->

@@ -21,8 +21,8 @@ android {
         applicationId "bangkokguy.development.android.rainbowbattery"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 10
-        versionName "Marie"
+        versionCode 12
+        versionName "Skyler"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
