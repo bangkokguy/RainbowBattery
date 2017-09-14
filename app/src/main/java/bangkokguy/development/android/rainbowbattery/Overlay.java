@@ -37,11 +37,13 @@ import static android.content.Intent.ACTION_POWER_CONNECTED;
 import static android.content.Intent.ACTION_POWER_DISCONNECTED;
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_SCREEN_ON;
+import static android.os.BatteryManager.BATTERY_HEALTH_UNKNOWN;
 import static android.os.BatteryManager.BATTERY_PLUGGED_AC;
 import static android.os.BatteryManager.BATTERY_PLUGGED_USB;
 import static android.os.BatteryManager.BATTERY_PLUGGED_WIRELESS;
 import static android.os.BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER;
 import static android.os.BatteryManager.BATTERY_STATUS_CHARGING;
+import static android.os.BatteryManager.BATTERY_STATUS_UNKNOWN;
 import static android.support.v4.app.NotificationCompat.CATEGORY_SERVICE;
 import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
 
@@ -72,7 +74,10 @@ import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
  * TODO:Make LED notification for low battery switchable in settings
  * DONE:Make it possible to position the bar on any side of the screen
  * DONE:Display "About" data in activity
- * TODO:With new install the initial battery bar parameters are different as defined in the settings -> bug
+ * DONE:With new install the initial battery bar parameters are different as defined in the settings -> bug
+ * DONE:java.lang.ArrayIndexOutOfBoundsException: showNotification (Overlay.java:256)
+ * DONE:java.lang.NumberFormatException: showNotification (Overlay.java:361)(Overlay.java:730)
+ * NICE TRY:BadTokenException: initBarView (Overlay.java:592)
  *
  * Releases: Jesse, hank, marie, skyler, walter, gustavo
  */
@@ -88,13 +93,13 @@ public class Overlay extends Service {
     final static int ONMS=4095/*255*/;
     final static int OFFMS=0;
     final static int OPAQUE=0xff;
-    final static int MAX_STROKE_WIDTH = 0x10;
+    //final static int MAX_STROKE_WIDTH = 0x10;
 
     final static int TOP = 0;
     final static int BOTTOM = 1;
     final static int LEFT_TOP_DOWN = 2;
     final static int LEFT_DOWN_TOP = 3;
-    final static int RIGHT_TOP_DOWN = 4;
+    //final static int RIGHT_TOP_DOWN = 4;
     final static int RIGHT_DOWN_TOP = 5;
 
     NotificationManagerCompat nm;
@@ -119,13 +124,13 @@ public class Overlay extends Service {
     boolean isBatteryCharging = false;
     boolean isFastCharging = false;
 
-    int 	eHealth = 0;        //battery health
+    int 	eHealth = BATTERY_HEALTH_UNKNOWN;        //battery health
     int 	eIconSmall = -1;    //resource ID of the small battery icon
     int 	eLevel = -1;        //battery percentage
     int 	ePlugged = 5;       //0=battery... 5-no value present
     boolean ePresent = true;    //true if battery present
     int     eScale = -1;        //the maximum battery level
-    int 	eStatus = 0;        //the current status constant
+    int 	eStatus = BATTERY_STATUS_UNKNOWN;        //the current status constant
     String 	eTechnology = "";   //the technology of the current battery
     int     eTemperature = -1;  //the current battery temperature
     int 	eVoltage = -1;      //the current battery voltage level
@@ -387,8 +392,14 @@ public class Overlay extends Service {
 
         playSoundIfBatteryFull = preferences.getBoolean("play_battery_full_sound", false);
         playSoundIfBatteryEmpty = preferences.getBoolean("play_battery_empty_sound", false);
-        maxNumberOfBatteryFullSoundPlayed = Integer.parseInt(preferences.getString("repeat_battery_full_sound", "1"));
-        maxNumberOfBatteryEmptySoundPlayed = Integer.parseInt(preferences.getString("repeat_battery_empty_sound", "1"));
+        try {
+            maxNumberOfBatteryFullSoundPlayed = Integer.parseInt(preferences.getString("repeat_battery_full_sound", "1"));
+            maxNumberOfBatteryEmptySoundPlayed = Integer.parseInt(preferences.getString("repeat_battery_empty_sound", "1"));
+        } catch (java.lang.NumberFormatException e) {
+            if(DEBUG)Log.d(TAG, "NumberFormatException");
+            maxNumberOfBatteryFullSoundPlayed = 1;
+            maxNumberOfBatteryEmptySoundPlayed = 1;
+        }
         //---
 
         if(DEBUG)Log.d(TAG, "Full Sound Counter ="+Integer.toString(batteryFullSoundPlayedCount));
@@ -583,13 +594,13 @@ public class Overlay extends Service {
                             Log.d(TAG, "BATTERY_PROPERTY_CHARGE_COUNTER="+Integer.toString(BATTERY_PROPERTY_CHARGE_COUNTER));
                         }
                 //get extra info from intent
-                    eHealth = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, 0);
+                    eHealth = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, BATTERY_HEALTH_UNKNOWN);
                     eIconSmall = intent.getIntExtra(BatteryManager.EXTRA_ICON_SMALL, -1);
                     eLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
                     ePlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 5);
                     ePresent = intent.getBooleanExtra(BatteryManager.EXTRA_PRESENT, true);
                     eScale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-                    eStatus = intent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
+                    eStatus = intent.getIntExtra(BatteryManager.EXTRA_STATUS, BATTERY_STATUS_UNKNOWN);
                     eTechnology = intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
                     eTemperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
                     eVoltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
@@ -678,7 +689,8 @@ public class Overlay extends Service {
                         barPosition);
         try {
             wm.addView(barView, params);
-        } catch (java.lang.SecurityException e)  {
+        }
+        catch (SecurityException | WindowManager.BadTokenException e) {
             //no overlay permission->forcefully end the service
             stopSelf();
         }
