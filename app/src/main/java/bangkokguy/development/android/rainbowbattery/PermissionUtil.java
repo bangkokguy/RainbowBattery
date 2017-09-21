@@ -36,19 +36,19 @@ class PermissionUtil {
 
             // If permission denied previously
             if (ActivityCompat.shouldShowRequestPermissionRationale(context, permission)) {
-                listener.onPermissionPreviouslyDenied();
+                listener.onPermissionPreviouslyDenied(permission);
             } else {
                 //Permission denied or first time requested
                 if (PreferencesUtil.isFirstTimeAskingPermission(context, permission)) {
                     PreferencesUtil.firstTimeAskingPermission(context, permission, false);
-                    listener.onPermissionAsk();
+                    listener.onPermissionAsk(permission);
                 } else {
                     //Handle the feature without permission or ask user to manually allow permission
-                    listener.onPermissionDisabled();
+                    listener.onPermissionDisabled(permission);
                 }
             }
         } else {
-            listener.onPermissionGranted();
+            listener.onPermissionGranted(permission);
         }
     }
     /**
@@ -69,18 +69,18 @@ class PermissionUtil {
         /*
                 * Callback to ask permission
                 * */
-        void onPermissionAsk();
+        void onPermissionAsk(String permission);
         /*
                 * Callback on permission denied
                 * */
-        void onPermissionPreviouslyDenied();
+        void onPermissionPreviouslyDenied(String permission);
         /*
                 * Callback on permission "Never show again" checked and denied
                 * */
-        void onPermissionDisabled();
+        void onPermissionDisabled(String permission);
         /*
                 * Callback on permission granted
                 * */
-        void onPermissionGranted();
+        void onPermissionGranted(String permission);
     }
 }

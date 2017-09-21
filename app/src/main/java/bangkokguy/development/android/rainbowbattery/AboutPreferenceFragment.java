@@ -1,13 +1,19 @@
 package bangkokguy.development.android.rainbowbattery;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -18,6 +24,8 @@ import android.widget.TextView;
  * to handle interaction events.
  */
 public class AboutPreferenceFragment extends PreferenceFragment {
+
+    private static final String TAG = PreferenceFragment.class.getSimpleName();
 
     private OnFragmentInteractionListener mListener;
 
@@ -30,10 +38,22 @@ public class AboutPreferenceFragment extends PreferenceFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        /*PreferenceManager pm = this.getPreferenceManager();
+        Preference p = pm.findPreference("krrr");
+        Log.d(TAG, p.toString());
+        p = pm.findPreference("krrr1");
+        Log.d(TAG, p.toString());
+        p = pm.findPreference("krrr2");
+        Log.d(TAG, p.toString());*/
+
+
+
         LinearLayout v = (LinearLayout) inflater.inflate(R.layout.custom_preference, container, false);
         TextView t1 = (TextView)v.findViewById(R.id.build_type);
         TextView t2 = (TextView)v.findViewById(R.id.version_name);
         TextView t3 = (TextView)v.findViewById(R.id.version_code);
+        //TextView t4 = (TextView)v.findViewById(R.id.permission_1);
+        //TextView t5 = (TextView)v.findViewById(R.id.permission_2);
 
         String s1 = BuildConfig.BUILD_TYPE;
         String s2 = BuildConfig.VERSION_NAME;
@@ -42,7 +62,16 @@ public class AboutPreferenceFragment extends PreferenceFragment {
         t1.setText(s1);
         t2.setText(s2);
         t3.setText(s3);
+        //t4.setTextColor(Color.GREEN);
+        //t4.setTextColor(Color.RED);
 
+        /*TextView m1 = (TextView)v.findViewById(R.id.textView);
+        ViewGroup x = (ViewGroup) m1.getParent();
+        x.removeView(m1);
+        //container.addView(t1);
+        TextView n1 = new TextView(getActivity());
+        n1.setText("faszom");
+        container.addView(n1);*/
 
 /*        LinearLayout v = new LinearLayout(getActivity());
 

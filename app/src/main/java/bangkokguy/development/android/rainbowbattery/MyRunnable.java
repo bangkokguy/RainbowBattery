@@ -27,13 +27,12 @@ class MyRunnable implements Runnable {
 
     private void notifyFinish() {
             try {mOnFinishListener.onFinish();}
-            catch (NullPointerException e) {Log.e(TAG, "null pointer in notifyfinish");}
+            catch (NullPointerException e) {if(DEBUG)Log.d(TAG, "null pointer in notifyfinish");}
     }
 
     public void run() {
         barView.invalidate();
         if (!isCanceled) {
-            //if(DEBUG)Log.d(TAG,"myrunnable->cancel false");
             if(o.mHandler!=null)o.mHandler.postDelayed(this, 300);
         } else if(DEBUG)Log.d(TAG,"myrunnable->cancel true");
         notifyFinish();

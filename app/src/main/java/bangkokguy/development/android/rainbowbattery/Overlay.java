@@ -24,6 +24,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
@@ -45,7 +46,6 @@ import static android.os.BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER;
 import static android.os.BatteryManager.BATTERY_STATUS_CHARGING;
 import static android.os.BatteryManager.BATTERY_STATUS_UNKNOWN;
 import static android.support.v4.app.NotificationCompat.CATEGORY_SERVICE;
-import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
 
 /*
  * DONE:Multipane setup
@@ -70,14 +70,25 @@ import static android.support.v4.app.NotificationCompat.FLAG_FOREGROUND_SERVICE;
  * DONE:Notification priority set to lowest
  * DONE:Sound picker picks now Notification sound instead of Ringtone
  * ---------------------------------------------
- * TODO:Make Full/Empty percent limit adjustable in settings
- * TODO:Make LED notification for low battery switchable in settings
+ * Skyler 13:
  * DONE:Make it possible to position the bar on any side of the screen
  * DONE:Display "About" data in activity
  * DONE:With new install the initial battery bar parameters are different as defined in the settings -> bug
  * DONE:java.lang.ArrayIndexOutOfBoundsException: showNotification (Overlay.java:256)
  * DONE:java.lang.NumberFormatException: showNotification (Overlay.java:361)(Overlay.java:730)
  * NICE TRY:BadTokenException: initBarView (Overlay.java:592)
+ * ---------------------------------------------
+ * Skyler 14:
+ * DONE:Display the permission Status in the Settings Activity
+ * DONE:maxnumberof.... check for number format
+ * ---------------------------------------------
+ * Skyler 15:
+ * DONE:Display permission Status in the Notification
+ * DONE:check noti lihts in 7.0
+ *
+ * TODO:Make Full/Empty percent limit adjustable in settings
+ * TODO:Make LED notification for low battery switchable in settings
+ * TODO:Translate app strings to Chinese
  *
  * Releases: Jesse, hank, marie, skyler, walter, gustavo
  */
@@ -280,6 +291,7 @@ public class Overlay extends Service {
     void showNotification() {
         showNotification("");
     }
+    @SuppressLint("NewApi")
     void showNotification(String extraMessage) {
 
         myRunnable.cancel();
@@ -346,15 +358,16 @@ public class Overlay extends Service {
         eExtraText = preferences.getBoolean("extra_text", false);
         String extra =
                 (eExtraText ? (":"+stopCode+":") : "") +
-                (isBatteryCharging ? "Battery is currently charging." : "Battery is discharging.") +
-                " Version: "+
-                versionName;
+                (isBatteryCharging ? "Battery charging." : "Battery discharging.") +
+                ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)&&Settings.canDrawOverlays(this) ? "" : " Permission missing");
         style.setSummaryText(extra);
 
-        NotificationCompat.Builder ncb = new NotificationCompat.Builder(this);
+        NotificationCompat.Builder ncb = new NotificationCompat.Builder(this, TAG);
         ncb
                 //.setDefaults(DEFAULT_LIGHTS)
                 //.setPriority(Notification.PRIORITY_MIN)
+                .setColorized(true) /*---new---*/
+                .setChannelId(TAG) /*---new---*/
                 .setCategory(CATEGORY_SERVICE)
                 .setContentIntent(PendingIntent.getActivity(
                         this,
@@ -440,37 +453,30 @@ public class Overlay extends Service {
 
         if(DEBUG)Log.d(TAG, "Battery Percent="+Integer.toString(getBatteryPercent())
                 +" Battery Color="+Integer.toString(argbLedColor(getBatteryPercent())));
-        if(DEBUG)Log.d(TAG, "Flags=" + Integer.toString(setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS+1)));
 
         Notification noti = ncb.build();
-        int n_id = 42;
+        int n_id;
         if(preferences.getBoolean("suppress_notification", false))
             n_id=0; else n_id=42;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            /*Notification noti = ncb.build();*/
             startForeground(n_id, noti);
-        }
-        else {
-            //noti.flags = noti.flags | FLAG_FOREGROUND_SERVICE | FLAG_SHOW_LIGHTS;
-            //noti.ledARGB = argbLedColor(getBatteryPercent());
-            //noti.ledOffMS = 0;
-            //noti.ledOnMS = 0;
-//            nm.notify(1, noti/*ncb.build()*/);
+        } else {
             startForeground(n_id, noti);
         }
     }
 
-    public int setLights(/*@ColorInt*/ int argb, int onMs, int offMs) {
+    /*public int setLights(@ColorInt int argb, int onMs, int offMs) {
         Notification mNotification = new Notification();
+        boolean showLights;
         mNotification.ledARGB = argb;
         mNotification.ledOnMS = onMs;
         mNotification.ledOffMS = offMs;
         mNotification.flags=FLAG_FOREGROUND_SERVICE;
-        boolean showLights = mNotification.ledOnMS != 0 && mNotification.ledOffMS != 0;
+        showLights = mNotification.ledOnMS != 0 && mNotification.ledOffMS != 0;
         mNotification.flags = (mNotification.flags & ~Notification.FLAG_SHOW_LIGHTS) |
             (showLights ? Notification.FLAG_SHOW_LIGHTS : 0);
-                   return mNotification.flags;
-    }
+        return mNotification.flags;
+    }*/
 
     /**
      * ---------------------------------------------------------------------------
@@ -692,6 +698,7 @@ public class Overlay extends Service {
         }
         catch (SecurityException | WindowManager.BadTokenException e) {
             //no overlay permission->forcefully end the service
+            if(DEBUG)Log.d(TAG, "addView thrown "+e.getMessage());
             stopSelf();
         }
 
@@ -828,8 +835,11 @@ public class Overlay extends Service {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
             if(DEBUG)Log.d(TAG, "Preference:"+sharedPreferences.toString()+" Value:"+s);
-            onConfigurationChanged(new Configuration());
-            if(isMyServiceRunning(Overlay.class))showNotification();
+            //onConfigurationChanged(new Configuration());
+            if(isMyServiceRunning(Overlay.class)) {
+                onConfigurationChanged(new Configuration());
+                showNotification();
+            }
         }
     };
 }

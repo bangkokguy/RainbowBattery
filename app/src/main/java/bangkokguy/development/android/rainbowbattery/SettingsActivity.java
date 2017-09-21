@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -23,7 +24,11 @@ import android.preference.RingtonePreference;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
@@ -45,13 +50,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity
 implements AboutPreferenceFragment.OnFragmentInteractionListener {
 
 
-    final static String TAG="SettingsActivity";
-    final static boolean DEBUG = BuildConfig.BUILD_TYPE.equals("debug"); //true;
+    private final static String TAG=SettingsActivity.class.getSimpleName();
+    private final static boolean DEBUG = BuildConfig.BUILD_TYPE.equals("debug"); //true;
 
-    static boolean firstRun = true;
+    boolean firstRun = true;
     static int adb = 0;
+    Context context;
 
-    final static int OVERLAY_PERMISSION_REQ_CODE = 1234;
+    private static final int OVERLAY_PERMISSION_REQ_CODE = 1234;
+    private static final int REQUEST_READ_EXTERNAL_STORAGE = 1235;
+
+
 
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
@@ -155,8 +164,6 @@ implements AboutPreferenceFragment.OnFragmentInteractionListener {
         }
     }
 
-    static Context context;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -183,9 +190,11 @@ implements AboutPreferenceFragment.OnFragmentInteractionListener {
          * set to zero which is wrong;
          */
 
+        enabled_canDrawOverlays=true;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(DEBUG)Log.d(TAG, Boolean.toString(Settings.canDrawOverlays(this)));
+            if(DEBUG)Log.d(TAG, "canDrawOverlays->"+Boolean.toString(Settings.canDrawOverlays(this)));
             if (!Settings.canDrawOverlays(this)) {
+                enabled_canDrawOverlays=false;
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
                 startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE);
@@ -194,8 +203,8 @@ implements AboutPreferenceFragment.OnFragmentInteractionListener {
 
         PermissionUtil.checkPermission(this, READ_EXTERNAL_STORAGE, new PermissionUtil.PermissionAskListener() {
             @Override
-            public void onPermissionAsk() {
-                Toast.makeText(SettingsActivity.this, "Permission Ask.", Toast.LENGTH_LONG).show();
+            public void onPermissionAsk(String permission) {
+                if(DEBUG)Log.d(TAG, "onPermissionAsk");
                 ActivityCompat.requestPermissions(
                         SettingsActivity.this,
                         new String[]{READ_EXTERNAL_STORAGE},
@@ -204,8 +213,8 @@ implements AboutPreferenceFragment.OnFragmentInteractionListener {
             }
 
             @Override
-            public void onPermissionPreviouslyDenied() {
-                if(DEBUG)Toast.makeText(SettingsActivity.this, "Permission Previously Disabled.", Toast.LENGTH_LONG).show();
+            public void onPermissionPreviouslyDenied(String permission) {
+                if(DEBUG)Log.d(TAG, "onPermissionPreviouslyDenied->"+permission);
                 new AlertDialog.Builder(SettingsActivity.this)
                         .setTitle(getString(R.string.permission_needed))
                         .setMessage(getString(R.string.dialog_fire_missiles))
@@ -229,19 +238,29 @@ implements AboutPreferenceFragment.OnFragmentInteractionListener {
             }
 
             @Override
-            public void onPermissionDisabled() {
-                Toast.makeText(SettingsActivity.this, "Permission Disabled.", Toast.LENGTH_LONG).show();
+            public void onPermissionDisabled(String permission) {
+                if(DEBUG)Log.d(TAG, "onPermissionDisabled->"+permission);
+                if(permission.equals(READ_EXTERNAL_STORAGE))
+                    enabled_read_external_storage = false;
+                else
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        enabled_canDrawOverlays=false;
+                    }
             }
 
             @Override
-            public void onPermissionGranted() {
-                if(DEBUG)Toast.makeText(SettingsActivity.this, "Permission Granted.", Toast.LENGTH_LONG).show();
+            public void onPermissionGranted(String permission) {
+                if(DEBUG)Log.d(TAG, "onPermissionGranted->"+permission);
+                if(permission.equals(READ_EXTERNAL_STORAGE))
+                    enabled_read_external_storage = true;
+                else
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        enabled_canDrawOverlays=true;
+                    }
             }
         });
 
     }
-
-    private static final int REQUEST_READ_EXTERNAL_STORAGE = 1234;
 
     @Override
     protected void onStart() {
@@ -259,10 +278,16 @@ implements AboutPreferenceFragment.OnFragmentInteractionListener {
 
     @Override
     public void onActivityResult (int requestCode, int resultCode, Intent data) {
+        if(DEBUG)Log.d(TAG, "onActivityResult");
         if(requestCode==OVERLAY_PERMISSION_REQ_CODE) {
             if(DEBUG)Log.d(TAG, "result "+Integer.toString(resultCode));
-            if(resultCode==0)
-                startMyService(Overlay.class);
+            if(resultCode==0) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                    enabled_canDrawOverlays=Settings.canDrawOverlays(this);
+                else
+                    enabled_canDrawOverlays=true;
+                if(enabled_canDrawOverlays)startMyService(Overlay.class);
+            } else enabled_canDrawOverlays=false;
         }
     }
 
@@ -285,13 +310,48 @@ implements AboutPreferenceFragment.OnFragmentInteractionListener {
         return isXLargeTablet(this);
     }
 
+    static boolean enabled_read_external_storage;
+    static boolean enabled_canDrawOverlays;
+
+    //TextView footer;
+    TextView getFooter() {
+        Log.d(TAG, "getFooter");
+        TextView lfooter;
+        lfooter = new TextView(this);
+
+        if(enabled_canDrawOverlays)Log.d(TAG, "enabled_canDrawOverlays==true");
+        if(enabled_read_external_storage)Log.d(TAG, "enabled_read_external_storage==true");
+        if(enabled_canDrawOverlays && enabled_read_external_storage) {
+            lfooter.setText(getString(R.string.permission_granted));
+            lfooter.setTextColor(Color.GREEN);
+            lfooter.setBackgroundColor(Color.DKGRAY);
+        } else {
+            Log.d(TAG, "enabled_read_external_storage="+enabled_read_external_storage);
+            lfooter.setText(getString(R.string.permission_not_granted));
+            lfooter.setTextColor(Color.GREEN);
+            lfooter.setBackgroundColor(Color.RED);
+            lfooter.invalidate();
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            lfooter.setElegantTextHeight(true);
+        }
+
+        lfooter.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+        return lfooter;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void onBuildHeaders(List<Header> target) {
+        Log.d(TAG, "onBuildHeaders");
         loadHeadersFromResource(R.xml.pref_headers, target);
+
+        //setListFooter(getFooter());
+
     }
 
     /**
@@ -326,6 +386,9 @@ implements AboutPreferenceFragment.OnFragmentInteractionListener {
     public void onResume() {
         super.onResume();
         if(DEBUG)Log.d(TAG, "onResume()");
+        //if (footer == null)
+        //    footer = getFooter();
+        setListFooter(getFooter());
     }
 
     @Override

@@ -31,4 +31,9 @@
         android:fragment="bangkokguy.development.android.rainbowbattery.AboutPreferenceFragment"
         android:title="@string/pref_header_about"/>
 
+    <header
+        android:title="haha"
+        android:summary="summary"
+        android:id="@+id/haha"/>
+
 </preference-headers>

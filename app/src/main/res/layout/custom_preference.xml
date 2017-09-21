@@ -2,11 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/baszom"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:nestedScrollingEnabled="true"
+    android:isScrollContainer="true">
 
     <!--android:autoLink="all"-->
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -68,8 +71,7 @@
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
         android:paddingTop="16dp"
-        android:text="@string/pref_header_about_permissions"
-        android:textAllCaps="false"/>
-
+        android:text="@string/pref_header_about_permissions"/>
+    <!--@string/pref_header_about_permissions"/-->
 
 </LinearLayout>
