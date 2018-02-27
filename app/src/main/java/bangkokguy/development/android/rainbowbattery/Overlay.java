@@ -6,6 +6,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -84,7 +85,8 @@ import static android.support.v4.app.NotificationCompat.CATEGORY_SERVICE;
  * ---------------------------------------------
  * Skyler 15:
  * DONE:Display permission Status in the Notification
- * DONE:check noti lihts in 7.0
+ * DONE:check noti lights in 7.0
+ * PENDING: play sound in notifications in order to get LED-lights in android versions up from 7.0
  *
  * TODO:Make Full/Empty percent limit adjustable in settings
  * TODO:Make LED notification for low battery switchable in settings
@@ -443,6 +445,7 @@ public class Overlay extends Service {
             if((isBatteryCharging) || (getBatteryPercent()<=15)){
                 if(DEBUG)Log.d(TAG,"Battery Charging or low");
                 ncb.setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS+1);
+                ncb.setSound(getNotificationSoundUri(this));
             }
             /*else {
                 if(DEBUG)Log.d(TAG,"Battery NOT Charging and not low");
@@ -463,6 +466,18 @@ public class Overlay extends Service {
         } else {
             startForeground(n_id, noti);
         }
+    }
+
+    private static Uri getNotificationSoundUri(Context context) {
+        int resID = R.raw.silence;
+        return resourceToUri(context, resID);
+    }
+
+    private static Uri resourceToUri(Context context, int resID) {
+        return Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
+                context.getResources().getResourcePackageName(resID) + '/' +
+                context.getResources().getResourceTypeName(resID) + '/' +
+                context.getResources().getResourceEntryName(resID));
     }
 
     /*public int setLights(@ColorInt int argb, int onMs, int offMs) {

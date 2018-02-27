@@ -16,13 +16,13 @@ android {
         }
     }
     compileSdkVersion 26
-    buildToolsVersion '26.0.1'
+    //buildToolsVersion '26.0.1'
     defaultConfig {
         applicationId "bangkokguy.development.android.rainbowbattery"
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 15
-        versionName "Skyler"
+        versionCode 17
+        versionName "Skyler 17"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -34,7 +34,7 @@ android {
                 variant.outputs.each { output ->
                     //def date = new Date();
                     //def formattedDate = date.format('yyyyMMddHHmmss')
-                    output.outputFile = new File(output.outputFile.parent,
+                    output.outputFileName = new File(output.outputFile.parent,
                             output.outputFile.name
                                     .replace("-release", "-" + "bangkokguy-dev")//formattedDate)
                                     .replace("app-", "rainbowbattery-")
