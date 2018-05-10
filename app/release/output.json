@@ -1,1 +1,1 @@
-[{"outputType":{"type":"APK"},"apkInfo":{"type":"MAIN","splits":[],"versionCode":17},"path":"home/bangkokguy/Android/Development/RainbowBattery/app/release/rainbowbattery-bangkokguy-dev.apk","properties":{"packageId":"bangkokguy.development.android.rainbowbattery","split":"","minSdkVersion":"16"}}]
+[{"outputType":{"type":"APK"},"apkInfo":{"type":"MAIN","splits":[],"versionCode":18,"versionName":"Skyler 18","enabled":true,"outputFile":"../rainbowbattery-bangkokguy.apk","fullName":"release","baseName":"release"},"path":"../rainbowbattery-bangkokguy.apk","properties":{}}]

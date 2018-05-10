@@ -86,8 +86,11 @@ import static android.support.v4.app.NotificationCompat.CATEGORY_SERVICE;
  * Skyler 15:
  * DONE:Display permission Status in the Notification
  * DONE:check noti lights in 7.0
- * PENDING: play sound in notifications in order to get LED-lights in android versions up from 7.0
+ * DONE: play sound in notifications in order to get LED-lights in android versions up from 7.0
+ * DONE: dummy sound notification (to get LED lights back) replaced with 0 vibration pattern, because
+ *          playing sound too often drives android crazy - too many sound pools opened but not freed
  *
+ * TODO:LED blinking frequency depending on charging source 0x000f 0x0010 -> 0xffff 0x0010
  * TODO:Make Full/Empty percent limit adjustable in settings
  * TODO:Make LED notification for low battery switchable in settings
  * TODO:Translate app strings to Chinese
@@ -114,6 +117,7 @@ public class Overlay extends Service {
     final static int LEFT_DOWN_TOP = 3;
     //final static int RIGHT_TOP_DOWN = 4;
     final static int RIGHT_DOWN_TOP = 5;
+    final static long pattern[] = {0L};
 
     NotificationManagerCompat nm;
     BatteryManager bm;
@@ -445,7 +449,8 @@ public class Overlay extends Service {
             if((isBatteryCharging) || (getBatteryPercent()<=15)){
                 if(DEBUG)Log.d(TAG,"Battery Charging or low");
                 ncb.setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS+1);
-                ncb.setSound(getNotificationSoundUri(this));
+                ncb.setVibrate(pattern);
+                //ncb.setSound(getNotificationSoundUri(this));
             }
             /*else {
                 if(DEBUG)Log.d(TAG,"Battery NOT Charging and not low");
