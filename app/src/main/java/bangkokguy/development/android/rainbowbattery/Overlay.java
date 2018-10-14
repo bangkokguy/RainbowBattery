@@ -90,6 +90,9 @@ import static android.support.v4.app.NotificationCompat.CATEGORY_SERVICE;
  * DONE: dummy sound notification (to get LED lights back) replaced with 0 vibration pattern, because
  *          playing sound too often drives android crazy - too many sound pools opened but not freed
  *
+ * TODO: first .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND)
+ *     TODO:     and then send notification whenever LED light should be turned off
+  *    TODO:     and initializing the main class, respectively.
  * TODO:LED blinking frequency depending on charging source 0x000f 0x0010 -> 0xffff 0x0010
  * TODO:Make Full/Empty percent limit adjustable in settings
  * TODO:Make LED notification for low battery switchable in settings
@@ -448,8 +451,10 @@ public class Overlay extends Service {
         if (eLEDon)
             if((isBatteryCharging) || (getBatteryPercent()<=15)){
                 if(DEBUG)Log.d(TAG,"Battery Charging or low");
-                ncb.setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS+1);
-                ncb.setVibrate(pattern);
+                //ncb.setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS+1);
+                ncb
+                    .setLights(argbLedColor(getBatteryPercent()), ONMS, OFFMS+1)
+                    .setVibrate(pattern);
                 //ncb.setSound(getNotificationSoundUri(this));
             }
             /*else {

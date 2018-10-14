@@ -32,8 +32,8 @@
         android:title="@string/pref_header_about"/>
 
     <header
-        android:title="haha"
-        android:summary="summary"
+        android:title="RainbowBattery"
+        android:summary="This small program was made to provide you your battery information in a better way. Have fun. :)"
         android:id="@+id/haha"/>
 
 </preference-headers>
