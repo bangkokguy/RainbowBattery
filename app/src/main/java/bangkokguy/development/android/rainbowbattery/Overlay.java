@@ -3,6 +3,8 @@ package bangkokguy.development.android.rainbowbattery;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -122,7 +124,8 @@ public class Overlay extends Service {
     final static int RIGHT_DOWN_TOP = 5;
     final static long pattern[] = {0L};
 
-    NotificationManagerCompat nm;
+    NotificationManager nm;
+    NotificationChannel notificationChannel;
     BatteryManager bm;
     WindowManager wm;
 
@@ -201,7 +204,18 @@ public class Overlay extends Service {
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.registerOnSharedPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
-        nm = NotificationManagerCompat.from(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            nm = getSystemService(NotificationManager.class); //NotificationManagerCompat.from(this);
+        } else {
+            nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationChannel = new NotificationChannel("43", "Battery", NotificationManager.IMPORTANCE_LOW);
+            nm.createNotificationChannel(notificationChannel);
+
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             bm = (BatteryManager) this.getSystemService(Context.BATTERY_SERVICE);
         }
@@ -468,6 +482,7 @@ public class Overlay extends Service {
                 +" Battery Color="+Integer.toString(argbLedColor(getBatteryPercent())));
 
         //ncb.setCategory(Notification.CATEGORY_SYSTEM);
+        ncb.setChannelId("43");
         Notification noti = ncb.build();
         int n_id;
         if(preferences.getBoolean("suppress_notification", false))
@@ -694,12 +709,18 @@ public class Overlay extends Service {
 
         boolean horizontal=(barPosition==TOP||barPosition==BOTTOM);
 
+        int OVERLAY=WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+             OVERLAY=WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        }
+
         WindowManager.LayoutParams params = new
                 WindowManager.LayoutParams (
                         (horizontal ? screenWidth    : (barHeight / 2)), //width
                         (horizontal ? (barHeight / 2)  : screenHeight),  //height
-                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,//TYPE_SYSTEM_OVERLAY, //TYPE_SYSTEM_ALERT
-                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, //FLAG_WATCH_OUTSIDE_TOUCH,
+                        OVERLAY, //WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,//TYPE_SYSTEM_OVERLAY, //TYPE_SYSTEM_ALERT
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, //FLAG_WATCH_OUTSIDE_TOUCH,
                         PixelFormat./*OPAQUE*/TRANSPARENT
                 );
 
