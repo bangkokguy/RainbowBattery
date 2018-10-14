@@ -157,6 +157,7 @@ implements AboutPreferenceFragment.OnFragmentInteractionListener {
 
     void startMyService(Class<?> serviceClass) {
         if(!isMyServiceRunning(serviceClass)){
+            Log.d(TAG, "Starting service Overlay");
             startService(new Intent(this, Overlay.class)
                     .putExtra("showOverlay", true)
                     .putExtra("batteryEmptySoundPlayedCount", 0)

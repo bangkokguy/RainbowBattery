@@ -467,10 +467,13 @@ public class Overlay extends Service {
         if(DEBUG)Log.d(TAG, "Battery Percent="+Integer.toString(getBatteryPercent())
                 +" Battery Color="+Integer.toString(argbLedColor(getBatteryPercent())));
 
+        //ncb.setCategory(Notification.CATEGORY_SYSTEM);
         Notification noti = ncb.build();
         int n_id;
         if(preferences.getBoolean("suppress_notification", false))
             n_id=0; else n_id=42;
+
+        Log.d(TAG, "startForeground");
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             startForeground(n_id, noti);
         } else {
@@ -695,7 +698,7 @@ public class Overlay extends Service {
                 WindowManager.LayoutParams (
                         (horizontal ? screenWidth    : (barHeight / 2)), //width
                         (horizontal ? (barHeight / 2)  : screenHeight),  //height
-                        WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY, //TYPE_SYSTEM_ALERT
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,//TYPE_SYSTEM_OVERLAY, //TYPE_SYSTEM_ALERT
                         WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, //FLAG_WATCH_OUTSIDE_TOUCH,
                         PixelFormat./*OPAQUE*/TRANSPARENT
                 );
