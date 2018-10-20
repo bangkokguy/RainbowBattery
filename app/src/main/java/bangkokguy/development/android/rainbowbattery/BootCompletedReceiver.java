@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -28,8 +29,14 @@ public class BootCompletedReceiver extends BroadcastReceiver {
                         .getDefaultSharedPreferences(context);
                 boolean autoStart = prefs.getBoolean("start_on_boot", false);
                 if (autoStart) {
-                    context.startService(new Intent(context, Overlay.class)
-                            .putExtra("showOverlay", true));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        // startForegroundService added to avoid IllegalStatementException seen in google play console;
+                        context.startForegroundService(new Intent(context, Overlay.class)
+                                .putExtra("showOverlay", true));
+                    } else {
+                        context.startService(new Intent(context, Overlay.class)
+                                .putExtra("showOverlay", true));
+                    }
                     Log.i(TAG, "Service started");
                 } else {
                     Log.i(TAG, "Auto start disabled");

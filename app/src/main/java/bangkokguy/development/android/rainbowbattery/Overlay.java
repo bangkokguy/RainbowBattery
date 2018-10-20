@@ -91,6 +91,9 @@ import static android.support.v4.app.NotificationCompat.CATEGORY_SERVICE;
  * DONE: play sound in notifications in order to get LED-lights in android versions up from 7.0
  * DONE: dummy sound notification (to get LED lights back) replaced with 0 vibration pattern, because
  *          playing sound too often drives android crazy - too many sound pools opened but not freed
+ *----------------------------------------------
+ * Skyler 23:
+ * Bug fixes: Illegal state in BootCompleted and NUllPointer in onConfigChanged
  *
  * TODO: first .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND)
  *     TODO:     and then send notification whenever LED light should be turned off
@@ -850,20 +853,27 @@ public class Overlay extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if(DEBUG)Log.d(TAG, Integer.toString(newConfig.orientation) + ":::" +newConfig.toString());
 
-        //DrawView svbarView = barView;
-        barView = initBarView(this);
-        //wm.removeView(svbarView);
-        myRunnable.setBarView(barView);
+        // if statement added to avoid NullPointerException seen in google play console;
+        // it is maybe the wrong solution, but worth trying it
+        if (newConfig != null) {
 
-        showNotification();
+            if (DEBUG)
+                Log.d(TAG, Integer.toString(newConfig.orientation) + ":::" + newConfig.toString());
 
-        sharedPref.edit()
-            .putString("stop_code", "config changed")
-            .putInt("savedInstanceEmptySoundPlayedCount", batteryEmptySoundPlayedCount)
-            .putInt("savedInstanceFullSoundPlayedCount", batteryFullSoundPlayedCount)
-            .apply();
+            //DrawView svbarView = barView;
+            barView = initBarView(this);
+            //wm.removeView(svbarView);
+            myRunnable.setBarView(barView);
+
+            showNotification();
+
+            sharedPref.edit()
+                    .putString("stop_code", "config changed")
+                    .putInt("savedInstanceEmptySoundPlayedCount", batteryEmptySoundPlayedCount)
+                    .putInt("savedInstanceFullSoundPlayedCount", batteryFullSoundPlayedCount)
+                    .apply();
+        }
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
